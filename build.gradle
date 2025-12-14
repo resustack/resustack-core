@@ -1,0 +1,50 @@
+plugins {
+    id 'java'
+    id "org.springframework.boot" version "${SPRING_BOOT_VERSION}" apply false
+    id "io.spring.dependency-management" version "${SPRING_BOOT_DEPENDENCY_MANAGEMENT_VERSION}" apply false
+    id 'org.jetbrains.kotlin.jvm' version "${KOTLIN_VERSION}" apply false
+    id 'org.jetbrains.kotlin.plugin.spring' version "${KOTLIN_VERSION}" apply false
+}
+
+allprojects {
+    group = "com.resustack"
+    version = "0.0.1-SNAPSHOT"
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: "java"
+    apply plugin: "io.spring.dependency-management"
+    apply plugin: "org.jetbrains.kotlin.jvm"
+    apply plugin: "org.jetbrains.kotlin.plugin.spring"
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(Integer.parseInt(JAVA_VERSION))
+        }
+    }
+
+    kotlin {
+        jvmToolchain(Integer.parseInt(JAVA_VERSION))
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.boot:spring-boot-dependencies:${SPRING_BOOT_VERSION}"
+        }
+    }
+
+    tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+    }
+
+    dependencies {
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+    }
+}
