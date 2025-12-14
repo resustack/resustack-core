@@ -1,0 +1,13 @@
+package com.resustack.api.resustackapi
+
+import org.junit.jupiter.api.Test
+import org.springframework.boot.test.context.SpringBootTest
+
+@SpringBootTest
+class ResustackApiApplicationTests {
+
+    @Test
+    fun contextLoads() {
+    }
+
+}
