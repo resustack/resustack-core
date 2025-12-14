@@ -1,0 +1,18 @@
+pluginManagement {
+    def springBootVersion = providers.gradleProperty("SPRING_BOOT_VERSION").get()
+    def dependencyManagementVersion = providers.gradleProperty("SPRING_BOOT_DEPENDENCY_MANAGEMENT_VERSION").get()
+
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+
+    plugins {
+        id "org.springframework.boot" version springBootVersion
+        id "io.spring.dependency-management" version dependencyManagementVersion
+    }
+}
+
+rootProject.name = 'resustack-core'
+
+include 'resustack-api'
