@@ -19,6 +19,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
     implementation 'tools.jackson.module:jackson-module-kotlin'
+    implementation "org.liquibase:liquibase-core:${LIQUIBASE_VERSION}"
+    implementation "org.liquibase.ext:liquibase-mongodb:${LIQUIBASE_MONGODB_VERSION}"
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-data-mongodb-test'
@@ -33,3 +35,5 @@ kotlin {
         freeCompilerArgs.addAll '-Xjsr305=strict', '-Xannotation-default-target=param-property'
     }
 }
+
+tasks.register("prepareKotlinBuildScriptModel"){}
