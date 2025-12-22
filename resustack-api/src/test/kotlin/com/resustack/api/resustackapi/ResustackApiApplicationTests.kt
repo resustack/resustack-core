@@ -1,4 +1,4 @@
-package com.resustack.api.resustackapi
+package com.resustack.api
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
