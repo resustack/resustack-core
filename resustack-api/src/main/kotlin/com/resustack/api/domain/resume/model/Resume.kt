@@ -29,6 +29,8 @@ data class Resume(
 
     val sections: List<Section> = emptyList(),
 
+    val skills: Skills? = null,
+
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
     val updatedAt: LocalDateTime = LocalDateTime.now()

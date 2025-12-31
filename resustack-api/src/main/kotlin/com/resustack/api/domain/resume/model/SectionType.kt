@@ -6,6 +6,5 @@ package com.resustack.api.domain.resume.model
 enum class SectionType {
     WORK_EXPERIENCE,
     PROJECT,
-    SKILL,
     EDUCATION
 }
