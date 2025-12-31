@@ -1,0 +1,21 @@
+databaseChangeLog:
+  # --- Templates Collection ---
+  - changeSet:
+      id: create-templates-collection
+      author: resustack
+      changes:
+        - createCollection:
+            collectionName: templates
+      rollback:
+        - dropCollection:
+            collectionName: templates
+
+  - changeSet:
+      id: add-templates-collection-comment
+      author: resustack
+      changes:
+        - runCommand:
+            command: "{collMod: 'templates', comment: '레이아웃, 테마, 스타일 설정을 포함한 이력서 템플릿'}"
+      rollback:
+        - runCommand:
+            command: "{collMod: 'templates', comment: ''}"

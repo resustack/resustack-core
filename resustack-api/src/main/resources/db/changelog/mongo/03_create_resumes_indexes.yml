@@ -1,0 +1,53 @@
+databaseChangeLog:
+  # --- Resumes Collection Indices ---
+  - changeSet:
+      id: create-resumes-userid-index
+      author: resustack
+      changes:
+        - createIndex:
+            collectionName: resumes
+            keys: '{ userId: 1 }'
+            options: '{ name: "idx_userId" }'
+      rollback:
+        - dropIndex:
+            collectionName: resumes
+            indexName: idx_userId
+
+  - changeSet:
+      id: create-resumes-status-index
+      author: resustack
+      changes:
+        - createIndex:
+            collectionName: resumes
+            keys: '{ status: 1 }'
+            options: '{ name: "idx_status" }'
+      rollback:
+        - dropIndex:
+            collectionName: resumes
+            indexName: idx_status
+
+  - changeSet:
+      id: create-resumes-userid-status-compound-index
+      author: resustack
+      changes:
+        - createIndex:
+            collectionName: resumes
+            keys: '{ userId: 1, status: 1 }'
+            options: '{ name: "idx_userId_status" }'
+      rollback:
+        - dropIndex:
+            collectionName: resumes
+            indexName: idx_userId_status
+
+  - changeSet:
+      id: create-resumes-createdat-index
+      author: resustack
+      changes:
+        - createIndex:
+            collectionName: resumes
+            keys: '{ createdAt: -1 }'
+            options: '{ name: "idx_createdAt" }'
+      rollback:
+        - dropIndex:
+            collectionName: resumes
+            indexName: idx_createdAt

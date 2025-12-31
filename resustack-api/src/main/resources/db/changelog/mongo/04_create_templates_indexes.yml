@@ -1,0 +1,27 @@
+databaseChangeLog:
+  # --- Templates Collection Indices ---
+  - changeSet:
+      id: create-templates-status-index
+      author: resustack
+      changes:
+        - createIndex:
+            collectionName: templates
+            keys: '{ status: 1 }'
+            options: '{ name: "idx_status" }'
+      rollback:
+        - dropIndex:
+            collectionName: templates
+            indexName: idx_status
+
+  - changeSet:
+      id: create-templates-layouttype-index
+      author: resustack
+      changes:
+        - createIndex:
+            collectionName: templates
+            keys: '{ layoutType: 1 }'
+            options: '{ name: "idx_layoutType" }'
+      rollback:
+        - dropIndex:
+            collectionName: templates
+            indexName: idx_layoutType

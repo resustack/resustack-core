@@ -1,0 +1,21 @@
+databaseChangeLog:
+  # --- Resumes Collection ---
+  - changeSet:
+      id: create-resumes-collection
+      author: resustack
+      changes:
+        - createCollection:
+            collectionName: resumes
+      rollback:
+        - dropCollection:
+            collectionName: resumes
+
+  - changeSet:
+      id: add-resumes-collection-comment
+      author: resustack
+      changes:
+        - runCommand:
+            command: "{collMod: 'resumes', comment: '프로필, 섹션, 메타데이터를 포함한 사용자 이력서 문서'}"
+      rollback:
+        - runCommand:
+            command: "{collMod: 'resumes', comment: ''}"
