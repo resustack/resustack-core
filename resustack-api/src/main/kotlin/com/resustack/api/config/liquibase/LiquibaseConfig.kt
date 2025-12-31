@@ -1,5 +1,6 @@
 package com.resustack.api.config.liquibase
 
+import com.resustack.api.common.util.logger
 import liquibase.command.CommandScope
 import liquibase.ext.mongodb.database.MongoLiquibaseDatabase
 import liquibase.ext.mongodb.database.MongoConnection
@@ -15,25 +16,34 @@ class LiquibaseConfig(
     @Value("\${spring.liquibase.change-log}") private val changeLog: String
 ) {
 
+    private val log by logger()
+
     @PostConstruct
     fun runLiquibase() {
-        val connection = MongoConnection()
-        val driver = MongoClientDriver()
+        try {
+            MongoConnection().use { connection ->
+                val driver = MongoClientDriver()
+                connection.open(mongoUri, driver, null)
 
-        connection.open(mongoUri, driver, null)
+                val database = MongoLiquibaseDatabase()
+                database.connection = connection
 
-        val database = MongoLiquibaseDatabase()
-        database.connection = connection
+                val resourceAccessor = ClassLoaderResourceAccessor()
+                val changeLogPath = changeLog.removePrefix("classpath:")
 
-        val resourceAccessor = ClassLoaderResourceAccessor()
+                log.info("Starting Liquibase migration: {}", changeLogPath)
 
-        // "classpath:" 접두사 제거
-        val changeLogPath = changeLog.removePrefix("classpath:")
+                CommandScope("update")
+                    .addArgumentValue("database", database)
+                    .addArgumentValue("changelogFile", changeLogPath)
+                    .addArgumentValue("resourceAccessor", resourceAccessor)
+                    .execute()
 
-        CommandScope("update")
-            .addArgumentValue("database", database)
-            .addArgumentValue("changelogFile", changeLogPath)
-            .addArgumentValue("resourceAccessor", resourceAccessor)
-            .execute()
+                log.info("Liquibase migration completed successfully")
+            }
+        } catch (e: Exception) {
+            log.error("Liquibase migration failed", e)
+            throw IllegalStateException("Failed to run Liquibase migration", e)
+        }
     }
 }
