@@ -1,6 +1,8 @@
 package com.resustack.api.domain.resume.model
 
+import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDateTime
@@ -31,7 +33,9 @@ data class Resume(
 
     val skills: Skills? = null,
 
-    val createdAt: LocalDateTime = LocalDateTime.now(),
+    @CreatedDate
+    val createdAt: LocalDateTime? = null,
 
-    val updatedAt: LocalDateTime = LocalDateTime.now()
+    @LastModifiedDate
+    val updatedAt: LocalDateTime? = null
 )

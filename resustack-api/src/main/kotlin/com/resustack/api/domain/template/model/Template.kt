@@ -1,7 +1,10 @@
 package com.resustack.api.domain.template.model
 
+import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.mongodb.core.mapping.Document
+import java.time.LocalDateTime
 
 /**
  * Aggregate Root - Template
@@ -10,7 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 @Document(collection = "templates")
 data class Template(
     @Id
-    val id: String,
+    val id: String? = null,
 
     val name: String,
 
@@ -24,5 +27,11 @@ data class Template(
 
     val defaultSections: List<DefaultSection> = emptyList(),
 
-    val status: TemplateStatus = TemplateStatus.ACTIVE
+    val status: TemplateStatus = TemplateStatus.ACTIVE,
+
+    @CreatedDate
+    val createdAt: LocalDateTime? = null,
+
+    @LastModifiedDate
+    val updatedAt: LocalDateTime? = null
 )
