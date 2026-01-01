@@ -3,6 +3,7 @@ package com.resustack.api.domain.template.application
 import com.resustack.api.domain.template.application.dto.TemplateCreateRequest
 import com.resustack.api.domain.template.model.Spacing
 import com.resustack.api.common.exception.BusinessException
+import com.resustack.api.common.exception.ResourceConflictException
 import com.resustack.api.common.exception.ResourceNotFoundException
 import com.resustack.api.domain.template.model.*
 import com.resustack.api.domain.template.repository.TemplateRepository
@@ -84,7 +85,7 @@ class TemplateServiceTest {
         whenever(templateRepository.existsByName(request.name)).thenReturn(true)
 
         // When & Then
-        assertThrows<BusinessException> {
+        assertThrows<ResourceConflictException> {
             templateService.createTemplate(request)
         }
 

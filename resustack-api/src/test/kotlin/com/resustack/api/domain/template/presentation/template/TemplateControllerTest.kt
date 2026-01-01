@@ -5,6 +5,7 @@ import com.resustack.api.domain.template.application.dto.TemplateCreateRequest
 import com.resustack.api.domain.template.application.dto.TemplateResponse
 import com.resustack.api.domain.template.model.*
 import com.resustack.api.common.exception.BusinessException
+import com.resustack.api.common.exception.ResourceConflictException
 import com.resustack.api.common.exception.ResourceNotFoundException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -97,10 +98,10 @@ class TemplateControllerTest {
             // Given
             val request = createSampleRequest(name = "Duplicate Template")
             whenever(templateService.createTemplate(any()))
-                .thenThrow(BusinessException("이미 존재하는 템플릿 이름입니다: Duplicate Template"))
+                .thenThrow(ResourceConflictException("이미 존재하는 템플릿 이름입니다: Duplicate Template"))
 
             // When & Then
-            assertThrows<BusinessException> {
+            assertThrows<ResourceConflictException> {
                 templateController.createTemplate(request)
             }
 
