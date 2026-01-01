@@ -1,25 +1,42 @@
 package com.resustack.api.domain.template.model
 
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDateTime
 
 /**
- * Template Domain Model
- * 템플릿 도메인 모델
+ * Template Entity
+ * MongoDB 영속성을 위한 엔티티
  */
-data class Template(
+@Document(collection = "templates")
+data class TemplateEntity(
+    @Id
     val id: String? = null,
+
     val name: String,
+
     val description: String? = null,
+
     val thumbnail: String? = null,
+
     val layoutType: LayoutType,
+
     val theme: Theme,
+
     val defaultSections: List<DefaultSection> = emptyList(),
+
     val status: TemplateStatus = TemplateStatus.ACTIVE,
+
+    @CreatedDate
     val createdAt: LocalDateTime? = null,
+
+    @LastModifiedDate
     val updatedAt: LocalDateTime? = null
 ) {
-    fun toEntity(): TemplateEntity {
-        return TemplateEntity(
+    fun toDomain(): Template {
+        return Template(
             id = id,
             name = name,
             description = description,
@@ -33,5 +50,4 @@ data class Template(
         )
     }
 }
-
 
