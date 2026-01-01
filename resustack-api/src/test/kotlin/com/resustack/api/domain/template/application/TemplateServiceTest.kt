@@ -6,11 +6,13 @@ import com.resustack.api.domain.template.application.dto.TemplateCreateRequest
 import com.resustack.api.domain.template.model.LayoutType
 import com.resustack.api.domain.template.model.Spacing
 import com.resustack.api.domain.template.model.Template
+import com.resustack.api.domain.template.model.TemplateStatus
 import com.resustack.api.domain.template.model.Theme
 import com.resustack.api.domain.template.repository.TemplateRepository
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
@@ -31,85 +33,202 @@ class TemplateServiceTest {
         templateService = TemplateService(templateRepository)
     }
 
-    @Test
-    fun `템플릿 생성 성공`() {
-        // Given
-        val request = TemplateCreateRequest(
-            name = "Modern Template",
-            description = "A modern resume template",
-            thumbnail = "https://example.com/thumbnail.png",
-            layoutType = LayoutType.SINGLE_COLUMN,
-            theme = Theme(
-                primaryColor = "#000000",
-                secondaryColor = "#FFFFFF",
-                fontFamily = "Pretendard",
-                spacing = Spacing(base = "16px")
-            ),
-            defaultSections = emptyList()
-        )
-
-        val savedDomain = Template(
-            id = "template-123",
-            name = request.name,
-            description = request.description,
-            thumbnail = request.thumbnail,
-            layoutType = request.layoutType,
-            theme = Theme(
-                primaryColor = request.theme.primaryColor,
-                secondaryColor = request.theme.secondaryColor,
-                fontFamily = request.theme.fontFamily,
-                spacing = Spacing(base = request.theme.spacing.base)
-            ),
-            defaultSections = emptyList()
-        )
-
-        whenever(templateRepository.existsByName(request.name)).thenReturn(false)
-        whenever(templateRepository.save(any())).thenReturn(savedDomain)
-
-        // When
-        val response = templateService.createTemplate(request)
-
-        // Then
-        assertNotNull(response)
-        assertEquals("template-123", response.id)
-        assertEquals("Modern Template", response.name)
-        verify(templateRepository, times(1)).existsByName(request.name)
-        verify(templateRepository, times(1)).save(any())
-    }
-
-    @Test
-    fun `중복된 템플릿 이름으로 생성 시 예외 발생`() {
-        // Given
-        val request = TemplateCreateRequest(
-            name = "Duplicate Template",
-            layoutType = LayoutType.SINGLE_COLUMN,
-            theme = Theme(
-                primaryColor = "#000000",
-                secondaryColor = "#FFFFFF"
+    @Nested
+    inner class CreateTemplate {
+        @Test
+        fun `템플릿 생성 성공`() {
+            // Given
+            val request = TemplateCreateRequest(
+                name = "Modern Template",
+                description = "A modern resume template",
+                thumbnail = "https://example.com/thumbnail.png",
+                layoutType = LayoutType.SINGLE_COLUMN,
+                theme = Theme(
+                    primaryColor = "#000000",
+                    secondaryColor = "#FFFFFF",
+                    fontFamily = "Pretendard",
+                    spacing = Spacing(base = "16px")
+                ),
+                defaultSections = emptyList()
             )
-        )
 
-        whenever(templateRepository.existsByName(request.name)).thenReturn(true)
+            val savedDomain = Template(
+                id = "template-123",
+                name = request.name,
+                description = request.description,
+                thumbnail = request.thumbnail,
+                layoutType = request.layoutType,
+                theme = Theme(
+                    primaryColor = request.theme.primaryColor,
+                    secondaryColor = request.theme.secondaryColor,
+                    fontFamily = request.theme.fontFamily,
+                    spacing = Spacing(base = request.theme.spacing.base)
+                ),
+                defaultSections = emptyList()
+            )
 
-        // When & Then
-        assertThrows<ResourceConflictException> {
-            templateService.createTemplate(request)
+            whenever(templateRepository.existsByName(request.name)).thenReturn(false)
+            whenever(templateRepository.save(any())).thenReturn(savedDomain)
+
+            // When
+            val response = templateService.createTemplate(request)
+
+            // Then
+            assertNotNull(response)
+            assertEquals("template-123", response.id)
+            assertEquals("Modern Template", response.name)
+            verify(templateRepository, times(1)).existsByName(request.name)
+            verify(templateRepository, times(1)).save(any())
         }
 
-        verify(templateRepository, times(1)).existsByName(request.name)
-        verify(templateRepository, never()).save(any())
+        @Test
+        fun `중복된 템플릿 이름으로 생성 시 예외 발생`() {
+            // Given
+            val request = TemplateCreateRequest(
+                name = "Duplicate Template",
+                layoutType = LayoutType.SINGLE_COLUMN,
+                theme = Theme(
+                    primaryColor = "#000000",
+                    secondaryColor = "#FFFFFF"
+                )
+            )
+
+            whenever(templateRepository.existsByName(request.name)).thenReturn(true)
+
+            // When & Then
+            assertThrows<ResourceConflictException> {
+                templateService.createTemplate(request)
+            }
+
+            verify(templateRepository, times(1)).existsByName(request.name)
+            verify(templateRepository, never()).save(any())
+        }
     }
 
-    @Test
-    fun `존재하지 않는 템플릿 조회 시 예외 발생`() {
-        // Given
-        val templateId = "non-existent-id"
-        whenever(templateRepository.findById(templateId))
-            .thenThrow(ResourceNotFoundException("템플릿을 찾을 수 없습니다. ID: $templateId"))
+    @Nested
+    inner class GetTemplateById {
+        @Test
+        fun `템플릿 ID로 조회 성공`() {
+            // Given
+            val templateId = "template-123"
+            val template = Template(
+                id = templateId,
+                name = "Modern Template",
+                description = "A modern resume template",
+                layoutType = LayoutType.SINGLE_COLUMN,
+                theme = Theme(
+                    primaryColor = "#000000",
+                    secondaryColor = "#FFFFFF",
+                    fontFamily = "Pretendard",
+                    spacing = Spacing(base = "16px")
+                ),
+                defaultSections = emptyList()
+            )
 
-        // When & Then
-        assertThrows<ResourceNotFoundException> {
-            templateService.getTemplateById(templateId)
+            whenever(templateRepository.findById(templateId)).thenReturn(template)
+
+            // When
+            val response = templateService.getTemplateById(templateId)
+
+            // Then
+            assertNotNull(response)
+            assertEquals(templateId, response.id)
+            assertEquals("Modern Template", response.name)
+            assertEquals("A modern resume template", response.description)
+            verify(templateRepository, times(1)).findById(templateId)
+        }
+
+        @Test
+        fun `존재하지 않는 템플릿 조회 시 예외 발생`() {
+            // Given
+            val templateId = "non-existent-id"
+            whenever(templateRepository.findById(templateId))
+                .thenThrow(ResourceNotFoundException("템플릿을 찾을 수 없습니다. ID: $templateId"))
+
+            // When & Then
+            assertThrows<ResourceNotFoundException> {
+                templateService.getTemplateById(templateId)
+            }
+
+            verify(templateRepository, times(1)).findById(templateId)
+        }
+    }
+
+    @Nested
+    inner class FindAllTemplatesByStatus {
+        @Test
+        fun `상태별 템플릿 목록 조회 성공`() {
+            // Given
+            val status = TemplateStatus.ACTIVE
+            val templates = listOf(
+                Template(
+                    id = "template-1",
+                    name = "Template 1",
+                    description = "Description 1",
+                    layoutType = LayoutType.SINGLE_COLUMN,
+                    theme = Theme(
+                        primaryColor = "#000000",
+                        secondaryColor = "#FFFFFF"
+                    ),
+                    status = TemplateStatus.ACTIVE,
+                    defaultSections = emptyList()
+                ),
+                Template(
+                    id = "template-2",
+                    name = "Template 2",
+                    description = "Description 2",
+                    layoutType = LayoutType.TWO_COLUMN_LEFT,
+                    theme = Theme(
+                        primaryColor = "#111111",
+                        secondaryColor = "#EEEEEE"
+                    ),
+                    status = TemplateStatus.ACTIVE,
+                    defaultSections = emptyList()
+                )
+            )
+
+            whenever(templateRepository.findAllByStatus(status)).thenReturn(templates)
+
+            // When
+            val response = templateService.findAllTemplatesByStatus(status)
+
+            // Then
+            assertNotNull(response)
+            assertEquals(2, response.size)
+            assertEquals("template-1", response[0].id)
+            assertEquals("template-2", response[1].id)
+            verify(templateRepository, times(1)).findAllByStatus(status)
+        }
+
+        @Test
+        fun `비활성 상태의 템플릿 목록 조회 성공`() {
+            // Given
+            val status = TemplateStatus.INACTIVE
+            val templates = listOf(
+                Template(
+                    id = "template-3",
+                    name = "Inactive Template",
+                    layoutType = LayoutType.SINGLE_COLUMN,
+                    theme = Theme(
+                        primaryColor = "#000000",
+                        secondaryColor = "#FFFFFF"
+                    ),
+                    status = TemplateStatus.INACTIVE,
+                    defaultSections = emptyList()
+                )
+            )
+
+            whenever(templateRepository.findAllByStatus(status)).thenReturn(templates)
+
+            // When
+            val response = templateService.findAllTemplatesByStatus(status)
+
+            // Then
+            assertNotNull(response)
+            assertEquals(1, response.size)
+            assertEquals("template-3", response[0].id)
+            assertEquals(TemplateStatus.INACTIVE, response[0].status)
+            verify(templateRepository, times(1)).findAllByStatus(status)
         }
     }
 }
