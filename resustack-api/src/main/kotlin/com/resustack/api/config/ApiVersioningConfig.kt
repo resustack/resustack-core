@@ -18,10 +18,10 @@ class ApiVersioningConfig : WebMvcConfigurer {
         val API_VERSIONS = arrayOf("1.0")
     }
 
-    override fun configureApiVersioning(configurer: ApiVersionConfigurer?) {
+    override fun configureApiVersioning(configurer: ApiVersionConfigurer) {
         configurer
-            ?.useRequestHeader(VERSION_HEADER)
-            ?.setDefaultVersion(DEFAULT_VERSION)
-            ?.addSupportedVersions(*API_VERSIONS)
+            .useRequestHeader(VERSION_HEADER)
+            .setDefaultVersion(DEFAULT_VERSION)
+            .addSupportedVersions(*API_VERSIONS)
     }
 }
