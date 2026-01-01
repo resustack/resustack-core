@@ -1,3 +1,7 @@
 spring:
   mongodb:
     uri: mongodb://resustack:resustack@localhost:27018/resustack?authSource=admin
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
