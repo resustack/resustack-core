@@ -1,6 +1,6 @@
 package com.resustack.api.domain.template.application
 
-import com.resustack.api.common.exception.BusinessException
+import com.resustack.api.common.exception.ResourceConflictException
 import com.resustack.api.domain.template.application.dto.TemplateCreateRequest
 import com.resustack.api.domain.template.application.dto.TemplateResponse
 import com.resustack.api.domain.template.model.TemplateStatus
@@ -20,7 +20,7 @@ class TemplateService(
     @Transactional
     fun createTemplate(request: TemplateCreateRequest): TemplateResponse {
         if (templateRepository.existsByName(request.name)) {
-            throw BusinessException("이미 존재하는 템플릿 이름입니다: ${request.name}")
+            throw ResourceConflictException("이미 존재하는 템플릿 이름입니다: ${request.name}")
         }
 
         val domain = request.toDomain()

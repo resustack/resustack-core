@@ -72,6 +72,22 @@ class GlobalExceptionHandler {
     }
 
     /**
+     * ResourceConflictException 처리
+     */
+    @ExceptionHandler(ResourceConflictException::class)
+    fun handleResourceConflictException(
+        ex: ResourceConflictException
+    ): ResponseEntity<ResponseData<Nothing>> {
+        val response = ResponseData.of<Nothing>(
+            httpStatus = HttpStatus.CONFLICT,
+            errorCode = ErrorCode.RESOURCE_CONFLICT
+        )
+        val caller = getCallerInfo(ex)
+        log.warn("$caller - Resource conflict: ${ex.message}")
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response)
+    }
+
+    /**
      * 기타 예외 처리
      */
     @ExceptionHandler(Exception::class)
