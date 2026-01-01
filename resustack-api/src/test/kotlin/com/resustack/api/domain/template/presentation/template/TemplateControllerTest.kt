@@ -1,18 +1,25 @@
 package com.resustack.api.domain.template.presentation.template
 
+import com.resustack.api.common.exception.ResourceConflictException
+import com.resustack.api.common.exception.ResourceNotFoundException
 import com.resustack.api.domain.template.application.TemplateService
 import com.resustack.api.domain.template.application.dto.TemplateCreateRequest
 import com.resustack.api.domain.template.application.dto.TemplateResponse
-import com.resustack.api.domain.template.model.*
-import com.resustack.api.common.exception.BusinessException
-import com.resustack.api.common.exception.ResourceConflictException
-import com.resustack.api.common.exception.ResourceNotFoundException
-import org.junit.jupiter.api.Assertions.*
+import com.resustack.api.domain.template.model.LayoutType
+import com.resustack.api.domain.template.model.Spacing
+import com.resustack.api.domain.template.model.TemplateStatus
+import com.resustack.api.domain.template.model.Theme
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus
 import java.time.LocalDateTime
 
