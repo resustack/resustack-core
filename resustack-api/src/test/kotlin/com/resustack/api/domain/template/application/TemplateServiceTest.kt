@@ -1,10 +1,9 @@
-package com.resustack.api.application.template.service
+package com.resustack.api.domain.template.application
 
 import com.resustack.api.domain.template.application.dto.TemplateCreateRequest
 import com.resustack.api.domain.template.model.Spacing
 import com.resustack.api.common.exception.BusinessException
 import com.resustack.api.common.exception.ResourceNotFoundException
-import com.resustack.api.domain.template.application.TemplateService
 import com.resustack.api.domain.template.model.*
 import com.resustack.api.domain.template.repository.TemplateRepository
 import org.junit.jupiter.api.Assertions.*
