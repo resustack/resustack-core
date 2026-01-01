@@ -22,7 +22,7 @@ data class TemplateResponse(
     companion object {
         fun from(template: Template): TemplateResponse {
             return TemplateResponse(
-                id = template.id!!,
+                id = checkNotNull(template.id),
                 name = template.name,
                 description = template.description,
                 thumbnail = template.thumbnail,
