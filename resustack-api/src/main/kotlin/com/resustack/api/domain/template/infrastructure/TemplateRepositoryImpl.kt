@@ -24,11 +24,8 @@ class TemplateRepositoryImpl(
     }
 
     override fun findAllByStatus(status: TemplateStatus): List<Template> {
-        val templates = mongoRepository.findAllByStatus(status)
-        if (templates.isEmpty()) {
-            throw ResourceNotFoundException("해당 상태의 템플릿이 존재하지 않습니다. 상태: $status")
-        }
-        return templates.map { it.toDomain() }
+        return mongoRepository.findAllByStatus(status)
+            .map { it.toDomain() }
     }
 
     override fun existsByName(name: String): Boolean {
