@@ -13,8 +13,8 @@ class TemplateRepositoryImpl(
 ) : TemplateRepository {
 
     override fun save(template: Template): Template {
-        mongoRepository.save(template.toEntity())
-        return template
+        val savedTemplate = mongoRepository.save(template.toEntity())
+        return savedTemplate.toDomain()
     }
 
     override fun findById(id: String): Template {
