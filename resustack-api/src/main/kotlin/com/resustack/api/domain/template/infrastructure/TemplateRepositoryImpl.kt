@@ -12,16 +12,15 @@ class TemplateRepositoryImpl(
     private val mongoRepository: TemplateMongoRepository
 ) : TemplateRepository {
 
-    override fun save(domain: Template): Template {
-        val entity = domain.toEntity()
-        val savedEntity = mongoRepository.save(entity)
-        return savedEntity.toDomain()
+    override fun save(template: Template): Template {
+        val savedTemplate = mongoRepository.save(template.toEntity())
+        return savedTemplate.toDomain()
     }
 
     override fun findById(id: String): Template {
-        val entity = mongoRepository.findById(id)
+        val template = mongoRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("템플릿을 찾을 수 없습니다. ID: $id") }
-        return entity.toDomain()
+        return template.toDomain()
     }
 
     override fun findAllByStatus(status: TemplateStatus): List<Template> {
