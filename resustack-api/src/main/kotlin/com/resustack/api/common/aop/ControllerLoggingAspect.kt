@@ -116,15 +116,11 @@ class ControllerLoggingAspect {
      * 매핑 어노테이션에서 경로 추출
      */
     private fun extractPaths(annotation: Annotation): List<String> {
-        return try {
-            val result = annotation.annotationClass.java
-                .getMethod(ANNOTATION_METHOD_VALUE)
-                .invoke(annotation)
+        val result = annotation.annotationClass.java
+            .getMethod(ANNOTATION_METHOD_VALUE)
+            .invoke(annotation)
 
-            (result as? Array<*>)?.filterIsInstance<String>() ?: emptyList()
-        } catch (e: Exception) {
-            throw e
-        }
+        return (result as? Array<*>)?.filterIsInstance<String>() ?: emptyList()
     }
 
     /**
