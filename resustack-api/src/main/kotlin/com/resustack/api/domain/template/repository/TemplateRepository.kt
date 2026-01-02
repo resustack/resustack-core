@@ -5,7 +5,7 @@ import com.resustack.api.domain.template.model.TemplateStatus
 
 interface TemplateRepository {
 
-    fun save(domain: Template): Template
+    fun save(template: Template): Template
 
     fun findById(id: String): Template
 

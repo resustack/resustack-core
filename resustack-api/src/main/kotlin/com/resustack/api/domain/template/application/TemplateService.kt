@@ -22,17 +22,14 @@ class TemplateService(
         if (templateRepository.existsByName(request.name)) {
             throw ResourceConflictException("이미 존재하는 템플릿 이름입니다: ${request.name}")
         }
-
-        val domain = request.toDomain()
-        val savedDomain = templateRepository.save(domain)
-
-        return TemplateResponse.from(savedDomain)
+        val savedTemplate = templateRepository.save(request.toDomain())
+        return TemplateResponse.from(savedTemplate)
     }
 
     @Transactional(readOnly = true)
     fun getTemplateById(id: String): TemplateResponse {
-        val domain = templateRepository.findById(id)
-        return TemplateResponse.from(domain)
+        val template = templateRepository.findById(id)
+        return TemplateResponse.from(template)
     }
 
     /**

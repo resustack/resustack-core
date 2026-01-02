@@ -12,21 +12,23 @@ class TemplateRepositoryImpl(
     private val mongoRepository: TemplateMongoRepository
 ) : TemplateRepository {
 
-    override fun save(domain: Template): Template {
-        val entity = domain.toEntity()
-        val savedEntity = mongoRepository.save(entity)
-        return savedEntity.toDomain()
+    override fun save(template: Template): Template {
+        mongoRepository.save(template.toEntity())
+        return template
     }
 
     override fun findById(id: String): Template {
-        val entity = mongoRepository.findById(id)
+        val template = mongoRepository.findById(id)
             .orElseThrow { ResourceNotFoundException("템플릿을 찾을 수 없습니다. ID: $id") }
-        return entity.toDomain()
+        return template.toDomain()
     }
 
     override fun findAllByStatus(status: TemplateStatus): List<Template> {
-        return mongoRepository.findAllByStatus(status)
-            .map { it.toDomain() }
+        val templates = mongoRepository.findAllByStatus(status)
+        if (templates.isEmpty()) {
+            throw ResourceNotFoundException("해당 상태의 템플릿이 존재하지 않습니다. 상태: $status")
+        }
+        return templates.map { it.toDomain() }
     }
 
     override fun existsByName(name: String): Boolean {
