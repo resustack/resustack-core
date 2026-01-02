@@ -3,8 +3,6 @@ package com.resustack.api.domain.template.model
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 
-private const val DEFAULT_FONT_FAMILY = "Pretendard"
-
 /**
  * Theme 정보
  */
@@ -19,4 +17,8 @@ data class Theme(
 
     @field:Valid
     val spacing: Spacing = Spacing()
-)
+) {
+    companion object {
+        private const val DEFAULT_FONT_FAMILY = "Pretendard"
+    }
+}
