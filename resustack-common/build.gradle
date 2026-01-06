@@ -1,0 +1,22 @@
+plugins {
+    id "org.springframework.boot"
+    id "io.spring.dependency-management"
+    id "org.jetbrains.kotlin.jvm"
+    id "org.jetbrains.kotlin.plugin.spring"
+}
+
+bootJar {
+    enabled = true
+}
+
+jar {
+    enabled = false
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+
+    // Liquibase
+    implementation "org.liquibase:liquibase-core:${LIQUIBASE_VERSION}"
+    implementation "org.liquibase.ext:liquibase-mongodb:${LIQUIBASE_MONGODB_VERSION}"
+}
