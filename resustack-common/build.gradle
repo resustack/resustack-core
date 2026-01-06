@@ -18,5 +18,4 @@ dependencies {
 
     // Liquibase
     implementation "org.liquibase:liquibase-core:${LIQUIBASE_VERSION}"
-    implementation "org.liquibase.ext:liquibase-mongodb:${LIQUIBASE_MONGODB_VERSION}"
 }

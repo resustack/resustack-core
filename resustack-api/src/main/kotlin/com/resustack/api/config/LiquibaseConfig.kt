@@ -1,14 +1,15 @@
-package com.resustack.common.config.liquibase
+package com.resustack.api.config
 
 import com.resustack.common.util.logger
+import jakarta.annotation.PostConstruct
 import liquibase.command.CommandScope
-import liquibase.ext.mongodb.database.MongoLiquibaseDatabase
-import liquibase.ext.mongodb.database.MongoConnection
 import liquibase.ext.mongodb.database.MongoClientDriver
+import liquibase.ext.mongodb.database.MongoConnection
+import liquibase.ext.mongodb.database.MongoLiquibaseDatabase
 import liquibase.resource.ClassLoaderResourceAccessor
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
-import jakarta.annotation.PostConstruct
+import kotlin.use
 
 @Configuration
 class LiquibaseConfig(
