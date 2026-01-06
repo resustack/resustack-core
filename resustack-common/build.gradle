@@ -1,0 +1,25 @@
+plugins {
+    id "org.springframework.boot"
+    id "io.spring.dependency-management"
+    id "org.jetbrains.kotlin.jvm"
+    id "org.jetbrains.kotlin.plugin.spring"
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Jackson for JSON serialization
+    implementation 'tools.jackson.module:jackson-module-kotlin'
+
+    // Liquibase
+    implementation "org.liquibase:liquibase-core:${LIQUIBASE_VERSION}"
+}

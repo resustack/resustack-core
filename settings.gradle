@@ -16,3 +16,5 @@ pluginManagement {
 rootProject.name = 'resustack-core'
 
 include 'resustack-api'
+include 'resustack-auth'
+include 'resustack-common'

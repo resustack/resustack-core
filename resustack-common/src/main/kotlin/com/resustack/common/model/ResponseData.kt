@@ -1,4 +1,4 @@
-package com.resustack.api.common.dto
+package com.resustack.common.model
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import org.springframework.http.HttpStatus

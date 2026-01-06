@@ -1,4 +1,4 @@
-package com.resustack.api.config.liquibase
+package com.resustack.common.config.liquibase
 
 import liquibase.changelog.IncludeAllFilter
 import java.io.File
@@ -8,6 +8,7 @@ import java.util.regex.Pattern
  * 파일 컨밴션
  * - 번호_설명.확장자
  * - mongo 디렉토리 내에서는 .yml, .yaml 파일만 포함
+ * - postgres 디렉토리 내에서는 .sql 파일만 포함
  */
 class LiquibaseIncludeAllFilter : IncludeAllFilter {
 
@@ -33,7 +34,13 @@ class LiquibaseIncludeAllFilter : IncludeAllFilter {
             return MONGO_YAML_PATTERN.matcher(name).matches()
         }
 
+        // postgres: only *.sql
+        if (lowerPath.contains("/postgres/")) {
+            return name.endsWith(".sql")
+        }
+
         // other paths: do not include by default
         return false
     }
 }
+
