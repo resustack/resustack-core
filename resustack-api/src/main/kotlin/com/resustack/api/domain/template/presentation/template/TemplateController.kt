@@ -3,7 +3,7 @@ package com.resustack.api.domain.template.presentation.template
 import com.resustack.api.domain.template.application.dto.TemplateCreateRequest
 import com.resustack.api.domain.template.application.dto.TemplateResponse
 import com.resustack.api.domain.template.application.TemplateService
-import com.resustack.api.common.dto.ResponseData
+import com.resustack.common.model.ResponseData
 import com.resustack.api.domain.template.model.TemplateStatus
 import com.resustack.api.domain.template.presentation.template.swagger.TemplateControllerDocs
 import jakarta.validation.Valid

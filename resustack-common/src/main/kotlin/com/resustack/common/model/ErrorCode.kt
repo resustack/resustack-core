@@ -1,4 +1,4 @@
-package com.resustack.api.common.dto
+package com.resustack.common.model
 
 import org.springframework.http.HttpStatus
 

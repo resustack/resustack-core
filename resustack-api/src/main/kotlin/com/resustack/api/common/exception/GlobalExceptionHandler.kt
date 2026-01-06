@@ -1,7 +1,7 @@
 package com.resustack.api.common.exception
 
-import com.resustack.api.common.dto.ErrorCode
-import com.resustack.api.common.dto.ResponseData
+import com.resustack.common.model.ErrorCode
+import com.resustack.common.model.ResponseData
 import com.resustack.api.common.util.logger
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
