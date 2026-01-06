@@ -1,6 +1,6 @@
-package com.resustack.api.config.liquibase
+package com.resustack.common.config.liquibase
 
-import com.resustack.api.common.util.logger
+import com.resustack.common.util.logger
 import liquibase.command.CommandScope
 import liquibase.ext.mongodb.database.MongoLiquibaseDatabase
 import liquibase.ext.mongodb.database.MongoConnection

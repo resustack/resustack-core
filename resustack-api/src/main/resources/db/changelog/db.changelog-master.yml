@@ -1,5 +1,0 @@
-databaseChangeLog:
-  - includeAll:
-      path: db/changelog/mongo
-      relativeToChangelogFile: false
-      filter: com.resustack.api.config.liquibase.LiquibaseIncludeAllFilter
