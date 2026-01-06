@@ -1,0 +1,5 @@
+databaseChangeLog:
+  - includeAll:
+      path: db/postgres/changelog
+      relativeToChangelogFile: false
+      filter: com.resustack.common.config.liquibase.LiquibaseIncludeAllFilter
