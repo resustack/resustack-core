@@ -5,6 +5,9 @@ spring:
   application:
     name: resustack-auth
 
+  datasource:
+    driver-class-name: org.postgresql.Driver
+
   liquibase:
     enabled: true
     change-log: classpath:db/postgres/db.changelog-master.yml
