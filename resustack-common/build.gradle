@@ -22,6 +22,9 @@ dependencies {
 
     // Liquibase
     implementation "org.liquibase:liquibase-core:${LIQUIBASE_VERSION}"
+    // Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     // JWT
     implementation "io.jsonwebtoken:jjwt-api:${JJWT_VERSION}"
     runtimeOnly "io.jsonwebtoken:jjwt-impl:${JJWT_VERSION}"
