@@ -24,4 +24,4 @@ COMMENT ON COLUMN users.created_at IS '데이터 생성일자';
 COMMENT ON COLUMN users.updated_at IS '데이터 수정일자';
 
 CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS uidx_users_email ON users (email);
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS uidx_users_name ON users (name);
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_users_name ON users (name);
