@@ -1,0 +1,26 @@
+package com.resustack.auth.config
+
+import com.resustack.auth.oauth.application.CustomOAuth2UserService
+import com.resustack.auth.oauth.handler.OAuth2AuthenticationFailureHandler
+import com.resustack.auth.oauth.handler.OAuth2AuthenticationSuccessHandler
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer
+import org.springframework.stereotype.Component
+
+@Component
+class OAuth2SecurityConfig(
+    private val customOAuth2UserService: CustomOAuth2UserService,
+    private val oAuth2AuthenticationSuccessHandler: OAuth2AuthenticationSuccessHandler,
+    private val oAuth2AuthenticationFailureHandler: OAuth2AuthenticationFailureHandler
+) {
+
+    fun configure(oauth2: OAuth2LoginConfigurer<HttpSecurity>) {
+        oauth2
+            .userInfoEndpoint { userInfo ->
+                userInfo.userService(customOAuth2UserService)
+            }
+            .successHandler(oAuth2AuthenticationSuccessHandler)
+            .failureHandler(oAuth2AuthenticationFailureHandler)
+    }
+}
+
