@@ -48,6 +48,7 @@ class OAuth2AuthenticationSuccessHandler(
             authorities = authorities
         )
 
+        // TODO: HTTP-Only 쿠키로 토큰 전달하도록 수정
         val targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
             .queryParam(ACCESS_TOKEN, tokenResponse.accessToken)
             .queryParam(REFRESH_TOKEN, tokenResponse.refreshToken)
