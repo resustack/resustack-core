@@ -22,4 +22,8 @@ dependencies {
 
     // Liquibase
     implementation "org.liquibase:liquibase-core:${LIQUIBASE_VERSION}"
+    // JWT
+    implementation "io.jsonwebtoken:jjwt-api:${JJWT_VERSION}"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:${JJWT_VERSION}"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:${JJWT_VERSION}"
 }
