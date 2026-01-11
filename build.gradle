@@ -4,6 +4,7 @@ plugins {
     id "io.spring.dependency-management" version "${SPRING_BOOT_DEPENDENCY_MANAGEMENT_VERSION}" apply false
     id 'org.jetbrains.kotlin.jvm' version "${KOTLIN_VERSION}" apply false
     id 'org.jetbrains.kotlin.plugin.spring' version "${KOTLIN_VERSION}" apply false
+    id 'org.jetbrains.kotlin.plugin.jpa' version "${KOTLIN_VERSION}" apply false
 }
 
 allprojects {
