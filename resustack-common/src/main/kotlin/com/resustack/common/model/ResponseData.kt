@@ -34,5 +34,13 @@ data class ResponseData<T>(
                 errorCode = errorCode
             )
         }
+
+        fun <T> error(errorCode: ErrorCode): ResponseData<T> {
+            return ResponseData(
+                httpStatus = errorCode.httpStatus.value(),
+                data = null,
+                errorCode = errorCode
+            )
+        }
     }
 }
