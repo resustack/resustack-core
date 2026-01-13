@@ -1,6 +1,7 @@
 package com.resustack.api.domain.resume.model
 
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.Valid
 import java.util.UUID
 
 /**
@@ -23,6 +24,7 @@ data class Block(
     @Schema(description = "노출 여부", example = "true")
     val isVisible: Boolean = true,
 
+    @field:Valid
     @Schema(description = "블록 메타 정보")
     val blockMeta: BlockMeta? = null
 )
