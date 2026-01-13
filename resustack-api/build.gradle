@@ -44,7 +44,7 @@ dependencies {
     // test
     testImplementation 'org.springframework.boot:spring-boot-starter-data-mongodb-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-mongodb-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     // Mockito
     testImplementation 'org.mockito:mockito-core'
