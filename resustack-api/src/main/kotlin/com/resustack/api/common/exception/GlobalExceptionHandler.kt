@@ -5,10 +5,12 @@ import com.resustack.common.model.ResponseData
 import com.resustack.api.common.util.logger
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import kotlin.getValue
+import tools.jackson.databind.exc.InvalidFormatException
 
 /**
  * 전역 예외 처리 핸들러
@@ -25,8 +27,7 @@ class GlobalExceptionHandler {
     fun handleResourceNotFoundException(
         ex: ResourceNotFoundException
     ): ResponseEntity<ResponseData<Nothing>> {
-        val response = ResponseData.of<Nothing>(
-            httpStatus = HttpStatus.NOT_FOUND,
+        val response = ResponseData.error<Nothing>(
             errorCode = ErrorCode.RESOURCE_NOT_FOUND
         )
         val caller = getCallerInfo(ex)
@@ -41,8 +42,7 @@ class GlobalExceptionHandler {
     fun handleBusinessException(
         ex: BusinessException
     ): ResponseEntity<ResponseData<Nothing>> {
-        val response = ResponseData.of<Nothing>(
-            httpStatus = HttpStatus.BAD_REQUEST,
+        val response = ResponseData.error<Nothing>(
             errorCode = ErrorCode.INVALID_PARAMETER
         )
         val caller = getCallerInfo(ex)
@@ -115,8 +115,7 @@ class GlobalExceptionHandler {
     fun handleResourceConflictException(
         ex: ResourceConflictException
     ): ResponseEntity<ResponseData<Nothing>> {
-        val response = ResponseData.of<Nothing>(
-            httpStatus = HttpStatus.CONFLICT,
+        val response = ResponseData.error<Nothing>(
             errorCode = ErrorCode.RESOURCE_CONFLICT
         )
         val caller = getCallerInfo(ex)
@@ -131,8 +130,7 @@ class GlobalExceptionHandler {
     fun handleException(
         ex: Exception
     ): ResponseEntity<ResponseData<Nothing>> {
-        val response = ResponseData.of<Nothing>(
-            httpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
+        val response = ResponseData.error<Nothing>(
             errorCode = ErrorCode.INTERNAL_SERVER_ERROR
         )
         log.error("Unhandled exception occurred", ex)
