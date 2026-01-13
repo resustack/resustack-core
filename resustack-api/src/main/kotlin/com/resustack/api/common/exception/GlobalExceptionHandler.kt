@@ -71,6 +71,43 @@ class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response)
     }
 
+
+
+    /**
+     * JSON 파싱 오류 처리 (Enum 값 불일치 등)
+     */
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleHttpMessageNotReadableException(
+        ex: HttpMessageNotReadableException
+    ): ResponseEntity<ResponseData<Nothing>> {
+        val cause = ex.cause
+
+        // Enum 타입 불일치 오류 처리
+        if (cause is InvalidFormatException) {
+            val targetType = cause.targetType
+            if (targetType != null && targetType.isEnum) {
+                val allowedValues = targetType.enumConstants.joinToString(", ")
+                val invalidValue = cause.value
+                val errorMessage = "입력된 값 '${invalidValue}'은(는) 유효하지 않습니다. 허용된 값: [$allowedValues]"
+                
+                log.warn("Enum validation failed: $errorMessage")
+                
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseData.error(
+                        errorCode = ErrorCode.INVALID_PARAMETER
+                    )
+                )
+            }
+        }
+
+        val response = ResponseData.error<Nothing>(
+            errorCode = ErrorCode.INVALID_PARAMETER
+        )
+
+        log.warn("Message not readable: ${ex.message}")
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response)
+    }
+
     /**
      * ResourceConflictException 처리
      */
