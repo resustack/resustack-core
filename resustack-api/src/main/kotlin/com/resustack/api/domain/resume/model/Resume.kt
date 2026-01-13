@@ -23,15 +23,15 @@ data class Resume(
 
     val templateId: String,
 
-    val status: ResumeStatus = ResumeStatus.ACTIVE,
-
-    val isPublic: Boolean = false,
-
     val profile: Profile,
 
     val sections: List<Section> = emptyList(),
 
     val skills: Skills? = null,
+
+    val status: ResumeStatus = ResumeStatus.ACTIVE,
+
+    val isPublic: Boolean = false,
 
     @CreatedDate
     val createdAt: LocalDateTime? = null,
