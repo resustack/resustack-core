@@ -12,4 +12,6 @@ interface TemplateRepository {
     fun findAllByStatus(status: TemplateStatus): List<Template>
 
     fun existsByName(name: String): Boolean
+
+    fun existsById(id: String): Boolean
 }

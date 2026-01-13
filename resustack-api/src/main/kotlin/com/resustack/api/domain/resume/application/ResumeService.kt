@@ -1,15 +1,18 @@
 package com.resustack.api.domain.resume.application
 
+import com.resustack.api.common.exception.ResourceNotFoundException
 import com.resustack.api.domain.resume.application.dto.ResumeCreateRequest
 import com.resustack.api.domain.resume.application.dto.ResumeResponse
 import com.resustack.api.domain.resume.application.dto.ResumeSummaryResponse
 import com.resustack.api.domain.resume.repository.ResumeRepository
+import com.resustack.api.domain.template.repository.TemplateRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class ResumeService(
-    private val resumeRepository: ResumeRepository
+    private val resumeRepository: ResumeRepository,
+    private val templateRepository: TemplateRepository
 ) {
 
     /**
@@ -17,6 +20,10 @@ class ResumeService(
      */
     @Transactional
     fun createResume(userId: Long, request: ResumeCreateRequest): ResumeResponse {
+        if (!templateRepository.existsById(request.templateId)) {
+            throw ResourceNotFoundException("존재하지 않는 템플릿입니다. ID: ${request.templateId}")
+        }
+
         val resume = request.toDomain(userId)
         val savedResume = resumeRepository.save(resume)
         return ResumeResponse.from(savedResume)
