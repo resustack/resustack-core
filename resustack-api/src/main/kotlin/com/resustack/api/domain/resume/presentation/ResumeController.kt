@@ -1,10 +1,10 @@
-package com.resustack.api.domain.resume.presentation.resume
+package com.resustack.api.domain.resume.presentation
 
 import com.resustack.api.domain.resume.application.ResumeService
 import com.resustack.api.domain.resume.application.dto.ResumeCreateRequest
 import com.resustack.api.domain.resume.application.dto.ResumeResponse
 import com.resustack.api.domain.resume.application.dto.ResumeSummaryResponse
-import com.resustack.api.domain.resume.presentation.resume.swagger.ResumeControllerDocs
+import com.resustack.api.domain.resume.presentation.swagger.ResumeControllerDocs
 import com.resustack.common.model.ResponseData
 import com.resustack.common.security.principal.PrincipalDetails
 import jakarta.validation.Valid
@@ -31,7 +31,7 @@ class ResumeController(
     ): ResponseEntity<ResponseData<ResumeResponse>> {
         val userId = requireNotNull(principal.getUser().id)
         val response = resumeService.createResume(userId, request)
-        return ResponseEntity.status(HttpStatus.CREATED).body(ResponseData.of(HttpStatus.CREATED, response))
+        return ResponseEntity.status(HttpStatus.CREATED).body(ResponseData.Companion.of(HttpStatus.CREATED, response))
     }
 
     @GetMapping("/{id}", version = "1.0")
@@ -39,7 +39,7 @@ class ResumeController(
         @PathVariable id: String
     ): ResponseEntity<ResponseData<ResumeResponse>> {
         val response = resumeService.getResumeById(id)
-        return ResponseEntity.ok(ResponseData.of(HttpStatus.OK, response))
+        return ResponseEntity.ok(ResponseData.Companion.of(HttpStatus.OK, response))
     }
 
     @GetMapping(version = "1.0")
@@ -48,6 +48,6 @@ class ResumeController(
     ): ResponseEntity<ResponseData<List<ResumeSummaryResponse>>> {
         val userId = requireNotNull(principal.getUser().id)
         val responses = resumeService.getResumesByUserId(userId)
-        return ResponseEntity.ok(ResponseData.of(HttpStatus.OK, responses))
+        return ResponseEntity.ok(ResponseData.Companion.of(HttpStatus.OK, responses))
     }
 }

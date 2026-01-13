@@ -1,4 +1,4 @@
-package com.resustack.api.domain.template.presentation.template.swagger
+package com.resustack.api.domain.template.presentation.swagger
 
 import com.resustack.api.domain.template.application.dto.TemplateCreateRequest
 import com.resustack.api.domain.template.application.dto.TemplateResponse

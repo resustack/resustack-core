@@ -1,4 +1,4 @@
-package com.resustack.api.domain.resume.presentation.resume
+package com.resustack.api.domain.resume.presentation
 
 import com.resustack.api.common.exception.ResourceNotFoundException
 import com.resustack.api.domain.resume.application.ResumeService

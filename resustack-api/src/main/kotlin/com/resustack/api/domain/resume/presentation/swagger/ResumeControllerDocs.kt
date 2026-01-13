@@ -1,4 +1,4 @@
-package com.resustack.api.domain.resume.presentation.resume.swagger
+package com.resustack.api.domain.resume.presentation.swagger
 
 import com.resustack.api.domain.resume.application.dto.ResumeCreateRequest
 import com.resustack.api.domain.resume.application.dto.ResumeResponse
