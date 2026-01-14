@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import kotlin.getValue
 import tools.jackson.databind.exc.InvalidFormatException
+import org.springframework.security.access.AccessDeniedException
 
 /**
  * 전역 예외 처리 핸들러
@@ -121,6 +122,21 @@ class GlobalExceptionHandler {
         val caller = getCallerInfo(ex)
         log.warn("$caller - Resource conflict: ${ex.message}")
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response)
+    }
+
+    /**
+     * 접근 권한 예외 처리
+     */
+    @ExceptionHandler(AccessDeniedException::class)
+    fun handleAccessDeniedException(
+        ex: AccessDeniedException
+    ): ResponseEntity<ResponseData<Nothing>> {
+        val response = ResponseData.error<Nothing>(
+            errorCode = ErrorCode.FORBIDDEN
+        )
+        val caller = getCallerInfo(ex)
+        log.warn("$caller - Access denied: ${ex.message}")
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response)
     }
 
     /**

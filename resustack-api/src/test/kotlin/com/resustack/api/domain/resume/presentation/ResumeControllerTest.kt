@@ -82,7 +82,7 @@ class ResumeControllerTest {
                 updatedAt = LocalDateTime.now()
             )
 
-            given(resumeService.createResume(eq(userId), any())).willReturn(response)
+            given(resumeService.create(eq(userId), any())).willReturn(response)
 
             // When
             val result = resumeController.createResume(principal, request)
@@ -92,7 +92,7 @@ class ResumeControllerTest {
             assertNotNull(result.body)
             assertEquals(201, result.body?.httpStatus)
             assertEquals("resume-1", result.body?.data?.id)
-            verify(resumeService).createResume(eq(userId), any())
+            verify(resumeService).create(eq(userId), any())
         }
     }
 
@@ -116,29 +116,31 @@ class ResumeControllerTest {
                 updatedAt = LocalDateTime.now()
             )
 
-            given(resumeService.getResumeById(resumeId)).willReturn(response)
+            // Service signature change: expects userId (Long?)
+            given(resumeService.getById(eq(resumeId), eq(userId))).willReturn(response)
 
             // When
-            val result = resumeController.getResumeById(resumeId)
+            val result = resumeController.getResumeById(resumeId, principal)
 
             // Then
             assertEquals(HttpStatus.OK, result.statusCode)
             assertNotNull(result.body)
             assertEquals(200, result.body?.httpStatus)
             assertEquals(resumeId, result.body?.data?.id)
-            verify(resumeService).getResumeById(resumeId)
+            verify(resumeService).getById(eq(resumeId), eq(userId))
         }
 
         @Test
         fun `실패 - 존재하지 않는 ID 시 예외 발생`() {
             // Given
             val resumeId = "non-existent"
-            given(resumeService.getResumeById(resumeId))
+            // Service signature change: anyOrNull() for userId
+            given(resumeService.getById(eq(resumeId), any()))
                 .willThrow(ResourceNotFoundException("이력서를 찾을 수 없습니다."))
 
             // When & Then
             assertThrows(ResourceNotFoundException::class.java) {
-                resumeController.getResumeById(resumeId)
+                resumeController.getResumeById(resumeId, principal)
             }
         }
     }
@@ -158,7 +160,7 @@ class ResumeControllerTest {
                 )
             )
 
-            given(resumeService.getResumesByUserId(userId)).willReturn(summaryList)
+            given(resumeService.getAllByUserId(userId)).willReturn(summaryList)
 
             // When
             val result = resumeController.getMyResumes(principal)
@@ -169,7 +171,7 @@ class ResumeControllerTest {
             assertEquals(200, result.body?.httpStatus)
             assertEquals(1, result.body?.data?.size)
             assertEquals("Resume 1", result.body?.data?.get(0)?.title)
-            verify(resumeService).getResumesByUserId(userId)
+            verify(resumeService).getAllByUserId(userId)
         }
     }
 }

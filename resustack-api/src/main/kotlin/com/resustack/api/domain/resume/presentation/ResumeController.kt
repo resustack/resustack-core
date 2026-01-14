@@ -30,16 +30,18 @@ class ResumeController(
         @Valid @RequestBody request: ResumeCreateRequest
     ): ResponseEntity<ResponseData<ResumeResponse>> {
         val userId = requireNotNull(principal.getUser().id)
-        val response = resumeService.createResume(userId, request)
-        return ResponseEntity.status(HttpStatus.CREATED).body(ResponseData.Companion.of(HttpStatus.CREATED, response))
+        val response = resumeService.create(userId, request)
+        return ResponseEntity.status(HttpStatus.CREATED).body(ResponseData.of(HttpStatus.CREATED, response))
     }
 
     @GetMapping("/{id}", version = "1.0")
     override fun getResumeById(
-        @PathVariable id: String
+        @PathVariable id: String,
+        @AuthenticationPrincipal principal: PrincipalDetails?
     ): ResponseEntity<ResponseData<ResumeResponse>> {
-        val response = resumeService.getResumeById(id)
-        return ResponseEntity.ok(ResponseData.Companion.of(HttpStatus.OK, response))
+        val userId = principal?.getUser()?.id
+        val response = resumeService.getById(id, userId)
+        return ResponseEntity.ok(ResponseData.of(HttpStatus.OK, response))
     }
 
     @GetMapping(version = "1.0")
@@ -47,7 +49,7 @@ class ResumeController(
         @AuthenticationPrincipal principal: PrincipalDetails
     ): ResponseEntity<ResponseData<List<ResumeSummaryResponse>>> {
         val userId = requireNotNull(principal.getUser().id)
-        val responses = resumeService.getResumesByUserId(userId)
-        return ResponseEntity.ok(ResponseData.Companion.of(HttpStatus.OK, responses))
+        val responses = resumeService.getAllByUserId(userId)
+        return ResponseEntity.ok(ResponseData.of(HttpStatus.OK, responses))
     }
 }

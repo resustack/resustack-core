@@ -1,6 +1,8 @@
 package com.resustack.api.domain.resume.application
 
+
 import com.resustack.api.common.exception.ResourceNotFoundException
+import org.springframework.security.access.AccessDeniedException
 import com.resustack.api.domain.resume.application.dto.ResumeCreateRequest
 import com.resustack.api.domain.resume.model.Profile
 import com.resustack.api.domain.resume.model.Resume
@@ -52,7 +54,7 @@ class ResumeServiceTest {
             }
 
             // when
-            val response = resumeService.createResume(userId, request)
+            val response = resumeService.create(userId, request)
 
             // then
             assertNotNull(response)
@@ -77,7 +79,7 @@ class ResumeServiceTest {
 
             // when & then
             assertThrows(ResourceNotFoundException::class.java) {
-                resumeService.createResume(userId, request)
+                resumeService.create(userId, request)
             }
         }
     }
@@ -85,26 +87,99 @@ class ResumeServiceTest {
     @Nested
     inner class GetResumeById {
         @Test
-        fun `성공`() {
+        fun `공개 이력서 조회 성공`() {
             // given
             val resumeId = UUID.randomUUID().toString()
             val resume = Resume(
                 id = resumeId,
                 userId = 1L,
-                title = "My Resume",
+                title = "Public Resume",
                 templateId = "template-1",
                 profile = Profile(name = "User"),
-                status = ResumeStatus.ACTIVE
+                status = ResumeStatus.ACTIVE,
+                isPublic = true
             )
 
             whenever(resumeRepository.findById(resumeId)).thenReturn(resume)
 
             // when
-            val result = resumeService.getResumeById(resumeId)
+            val result = resumeService.getById(resumeId, null)
 
             // then
             assertEquals(resumeId, result.id)
-            assertEquals(resume.title, result.title)
+            assertEquals("Public Resume", result.title)
+        }
+
+        @Test
+        fun `비공개 이력서 조회 성공 (작성자)`() {
+            // given
+            val resumeId = UUID.randomUUID().toString()
+            val userId = 1L
+            val resume = Resume(
+                id = resumeId,
+                userId = userId,
+                title = "Private Resume",
+                templateId = "template-1",
+                profile = Profile(name = "User"),
+                status = ResumeStatus.ACTIVE,
+                isPublic = false
+            )
+
+            whenever(resumeRepository.findById(resumeId)).thenReturn(resume)
+
+            // when
+            val result = resumeService.getById(resumeId, userId)
+
+            // then
+            assertEquals(resumeId, result.id)
+            assertEquals("Private Resume", result.title)
+        }
+
+        @Test
+        fun `비공개 이력서 조회 실패 (작성자 아님)`() {
+            // given
+            val resumeId = UUID.randomUUID().toString()
+            val ownerId = 1L
+            val requesterId = 2L
+            val resume = Resume(
+                id = resumeId,
+                userId = ownerId,
+                title = "Private Resume",
+                templateId = "template-1",
+                profile = Profile(name = "User"),
+                status = ResumeStatus.ACTIVE,
+                isPublic = false
+            )
+
+            whenever(resumeRepository.findById(resumeId)).thenReturn(resume)
+
+            // when & then
+            assertThrows(AccessDeniedException::class.java) {
+                resumeService.getById(resumeId, requesterId)
+            }
+        }
+
+        @Test
+        fun `비공개 이력서 조회 실패 (비로그인)`() {
+            // given
+            val resumeId = UUID.randomUUID().toString()
+            val ownerId = 1L
+            val resume = Resume(
+                id = resumeId,
+                userId = ownerId,
+                title = "Private Resume",
+                templateId = "template-1",
+                profile = Profile(name = "User"),
+                status = ResumeStatus.ACTIVE,
+                isPublic = false
+            )
+
+            whenever(resumeRepository.findById(resumeId)).thenReturn(resume)
+
+            // when & then
+            assertThrows(AccessDeniedException::class.java) {
+                resumeService.getById(resumeId, null)
+            }
         }
     }
 
@@ -136,7 +211,7 @@ class ResumeServiceTest {
             whenever(resumeRepository.findAllByUserId(userId)).thenReturn(resumes)
 
             // when
-            val results = resumeService.getResumesByUserId(userId)
+            val results = resumeService.getAllByUserId(userId)
 
             // then
             assertEquals(2, results.size)

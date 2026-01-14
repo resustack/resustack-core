@@ -8,6 +8,7 @@ import com.resustack.api.domain.resume.repository.ResumeRepository
 import com.resustack.api.domain.template.repository.TemplateRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.security.access.AccessDeniedException
 
 @Service
 class ResumeService(
@@ -19,7 +20,7 @@ class ResumeService(
      * 이력서 생성
      */
     @Transactional
-    fun createResume(userId: Long, request: ResumeCreateRequest): ResumeResponse {
+    fun create(userId: Long, request: ResumeCreateRequest): ResumeResponse {
         if (!templateRepository.existsById(request.templateId)) {
             throw ResourceNotFoundException("존재하지 않는 템플릿입니다. ID: ${request.templateId}")
         }
@@ -33,8 +34,14 @@ class ResumeService(
      * 이력서 상세 조회 (ID)
      */
     @Transactional(readOnly = true)
-    fun getResumeById(id: String): ResumeResponse {
+    fun getById(id: String, userId: Long? = null): ResumeResponse {
         val resume = resumeRepository.findById(id)
+
+        // 비공개 이력서이면서, 작성자가 아닌 경우 접근 차단
+        if (!resume.isPublic && resume.userId != userId) {
+            throw AccessDeniedException("이력서 조회 권한이 없습니다.")
+        }
+
         return ResumeResponse.from(resume)
     }
 
@@ -42,7 +49,7 @@ class ResumeService(
      * 내 이력서 목록 조회 (요약 정보)
      */
     @Transactional(readOnly = true)
-    fun getResumesByUserId(userId: Long): List<ResumeSummaryResponse> {
+    fun getAllByUserId(userId: Long): List<ResumeSummaryResponse> {
         return resumeRepository.findAllByUserId(userId)
             .map { ResumeSummaryResponse.from(it) }
     }

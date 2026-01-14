@@ -16,6 +16,16 @@ class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter
 ) {
 
+    companion object {
+        private val PUBLIC_ENDPOINTS = arrayOf(
+            "/api/resumes/{id}",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-resources/**",
+            "/webjars/**"
+        )
+    }
+
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
@@ -23,12 +33,7 @@ class SecurityConfig(
             .csrf { it.disable() }
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers(
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-resources/**",
-                        "/webjars/**"
-                    ).permitAll()
+                    .requestMatchers(*PUBLIC_ENDPOINTS).permitAll()
                     .anyRequest().authenticated()
             }
             .oauth2Login { }

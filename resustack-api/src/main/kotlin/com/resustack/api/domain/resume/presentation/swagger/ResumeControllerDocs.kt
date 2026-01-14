@@ -41,7 +41,8 @@ interface ResumeControllerDocs {
     )
     fun getResumeById(
         @Parameter(description = "이력서 ID", required = true)
-        @PathVariable id: String
+        @PathVariable id: String,
+        @Parameter(hidden = true) @AuthenticationPrincipal principal: PrincipalDetails?
     ): ResponseEntity<ResponseData<ResumeResponse>>
 
     @Operation(summary = "내 이력서 목록 조회", description = "로그인한 사용자의 이력서 목록을 조회합니다 (요약 정보).")
