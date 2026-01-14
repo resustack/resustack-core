@@ -1,6 +1,6 @@
 spring:
   mongodb:
-    uri: mongodb://resustack:resustack@localhost:27018/resustack?authSource=admin
+    uri: mongodb://resustack:resustack@localhost:27018/resustack?authSource=admin&replicaSet=rs0&directConnection=true
 
 springdoc:
   swagger-ui:
@@ -10,3 +10,4 @@ logging:
   level:
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
     org.springframework.data.mongodb: DEBUG  # 전체 Spring Data MongoDB 로깅
+    org.springframework.transaction: DEBUG

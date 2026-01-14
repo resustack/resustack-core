@@ -9,9 +9,26 @@ services:
       MONGO_INITDB_ROOT_USERNAME: resustack
       MONGO_INITDB_ROOT_PASSWORD: resustack
       MONGO_INITDB_DATABASE: resustack
+    entrypoint:
+      - bash
+      - -c
+      - |
+        echo "bXlzZWNyZXRrZXkxMjM0NTY=" > /data/configdb/keyfile
+        chmod 400 /data/configdb/keyfile
+        chown 999:999 /data/configdb/keyfile
+        exec docker-entrypoint.sh mongod --replSet rs0 --keyFile /data/configdb/keyfile --bind_ip_all
     volumes:
       - mongodb_data:/data/db
       - mongodb_config:/data/configdb
+    healthcheck:
+      test: [
+        "CMD-SHELL",
+        "mongosh --quiet -u resustack -p resustack --authenticationDatabase admin --eval 
+        \"try { rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'localhost:27017' }] }).ok } 
+        catch (_) { rs.status().ok }\" | grep -q 1"
+      ]
+      interval: 10s
+      start_period: 30s
 
   postgres:
     container_name: resustack-postgresql
