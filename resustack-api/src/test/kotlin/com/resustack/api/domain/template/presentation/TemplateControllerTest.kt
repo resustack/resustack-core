@@ -1,4 +1,4 @@
-package com.resustack.api.domain.template.presentation.template
+package com.resustack.api.domain.template.presentation
 
 import com.resustack.api.common.exception.ResourceConflictException
 import com.resustack.api.common.exception.ResourceNotFoundException

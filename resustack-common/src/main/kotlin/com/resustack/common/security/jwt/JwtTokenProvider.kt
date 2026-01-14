@@ -1,5 +1,7 @@
 package com.resustack.common.security.jwt
 
+import com.resustack.common.domain.user.User
+import com.resustack.common.security.principal.PrincipalDetails
 import io.jsonwebtoken.*
 import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
@@ -8,7 +10,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.SimpleGrantedAuthority
-import org.springframework.security.core.userdetails.User
 import org.springframework.stereotype.Component
 import javax.crypto.SecretKey
 
@@ -68,7 +69,19 @@ class JwtTokenProvider(
             ?.map { SimpleGrantedAuthority(it) }
             ?: emptyList()
 
-        val principal = User(claims.subject, "", authorities)
+        val userId = claims[USER_ID_KEY]?.toString()?.toLongOrNull()
+        val email = claims.subject
+
+        val user = User(
+            id = userId,
+            email = email ?: "unknown",
+            name = "unknown",
+            profileImageUrl = "unknown",
+            gender = "unknown",
+            birthYear = "unknown"
+        )
+
+        val principal = PrincipalDetails(user)
 
         return UsernamePasswordAuthenticationToken(principal, token, authorities)
     }

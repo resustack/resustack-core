@@ -1,26 +1,46 @@
 package com.resustack.api.domain.resume.model
 
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.mongodb.core.index.Indexed
+import org.springframework.data.mongodb.core.mapping.Document
 import java.time.LocalDateTime
 
 /**
- * Resume Domain Model
- * 이력서 도메인 모델
+ * Resume Entity
+ * MongoDB 영속성을 위한 엔티티
  */
-data class Resume(
+@Document(collection = "resumes")
+data class ResumeEntity(
+    @Id
     val id: String? = null,
+
+    @Indexed
     val userId: Long,
+
     val title: String,
+
     val templateId: String,
+
     val profile: Profile,
+
     val sections: List<Section> = emptyList(),
+
     val skills: Skills? = null,
+
     val status: ResumeStatus = ResumeStatus.ACTIVE,
+
     val isPublic: Boolean = false,
+
+    @CreatedDate
     val createdAt: LocalDateTime? = null,
+
+    @LastModifiedDate
     val updatedAt: LocalDateTime? = null
 ) {
-    fun toEntity(): ResumeEntity {
-        return ResumeEntity(
+    fun toDomain(): Resume {
+        return Resume(
             id = id,
             userId = userId,
             title = title,

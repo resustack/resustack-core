@@ -31,4 +31,8 @@ class TemplateRepositoryImpl(
     override fun existsByName(name: String): Boolean {
         return mongoRepository.existsByName(name)
     }
+
+    override fun existsById(id: String): Boolean {
+        return mongoRepository.existsById(id)
+    }
 }

@@ -5,10 +5,13 @@ import com.resustack.common.model.ResponseData
 import com.resustack.api.common.util.logger
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import kotlin.getValue
+import tools.jackson.databind.exc.InvalidFormatException
+import org.springframework.security.access.AccessDeniedException
 
 /**
  * 전역 예외 처리 핸들러
@@ -25,8 +28,7 @@ class GlobalExceptionHandler {
     fun handleResourceNotFoundException(
         ex: ResourceNotFoundException
     ): ResponseEntity<ResponseData<Nothing>> {
-        val response = ResponseData.of<Nothing>(
-            httpStatus = HttpStatus.NOT_FOUND,
+        val response = ResponseData.error<Nothing>(
             errorCode = ErrorCode.RESOURCE_NOT_FOUND
         )
         val caller = getCallerInfo(ex)
@@ -41,8 +43,7 @@ class GlobalExceptionHandler {
     fun handleBusinessException(
         ex: BusinessException
     ): ResponseEntity<ResponseData<Nothing>> {
-        val response = ResponseData.of<Nothing>(
-            httpStatus = HttpStatus.BAD_REQUEST,
+        val response = ResponseData.error<Nothing>(
             errorCode = ErrorCode.INVALID_PARAMETER
         )
         val caller = getCallerInfo(ex)
@@ -71,6 +72,43 @@ class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response)
     }
 
+
+
+    /**
+     * JSON 파싱 오류 처리 (Enum 값 불일치 등)
+     */
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleHttpMessageNotReadableException(
+        ex: HttpMessageNotReadableException
+    ): ResponseEntity<ResponseData<Nothing>> {
+        val cause = ex.cause
+
+        // Enum 타입 불일치 오류 처리
+        if (cause is InvalidFormatException) {
+            val targetType = cause.targetType
+            if (targetType != null && targetType.isEnum) {
+                val allowedValues = targetType.enumConstants.joinToString(", ")
+                val invalidValue = cause.value
+                val errorMessage = "입력된 값 '${invalidValue}'은(는) 유효하지 않습니다. 허용된 값: [$allowedValues]"
+                
+                log.warn("Enum validation failed: $errorMessage")
+                
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseData.error(
+                        errorCode = ErrorCode.INVALID_PARAMETER
+                    )
+                )
+            }
+        }
+
+        val response = ResponseData.error<Nothing>(
+            errorCode = ErrorCode.INVALID_PARAMETER
+        )
+
+        log.warn("Message not readable: ${ex.message}")
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response)
+    }
+
     /**
      * ResourceConflictException 처리
      */
@@ -78,13 +116,27 @@ class GlobalExceptionHandler {
     fun handleResourceConflictException(
         ex: ResourceConflictException
     ): ResponseEntity<ResponseData<Nothing>> {
-        val response = ResponseData.of<Nothing>(
-            httpStatus = HttpStatus.CONFLICT,
+        val response = ResponseData.error<Nothing>(
             errorCode = ErrorCode.RESOURCE_CONFLICT
         )
         val caller = getCallerInfo(ex)
         log.warn("$caller - Resource conflict: ${ex.message}")
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response)
+    }
+
+    /**
+     * 접근 권한 예외 처리
+     */
+    @ExceptionHandler(AccessDeniedException::class)
+    fun handleAccessDeniedException(
+        ex: AccessDeniedException
+    ): ResponseEntity<ResponseData<Nothing>> {
+        val response = ResponseData.error<Nothing>(
+            errorCode = ErrorCode.FORBIDDEN
+        )
+        val caller = getCallerInfo(ex)
+        log.warn("$caller - Access denied: ${ex.message}")
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response)
     }
 
     /**
@@ -94,8 +146,7 @@ class GlobalExceptionHandler {
     fun handleException(
         ex: Exception
     ): ResponseEntity<ResponseData<Nothing>> {
-        val response = ResponseData.of<Nothing>(
-            httpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
+        val response = ResponseData.error<Nothing>(
             errorCode = ErrorCode.INTERNAL_SERVER_ERROR
         )
         log.error("Unhandled exception occurred", ex)

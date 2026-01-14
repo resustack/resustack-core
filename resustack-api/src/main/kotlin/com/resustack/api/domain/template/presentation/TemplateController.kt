@@ -1,11 +1,11 @@
-package com.resustack.api.domain.template.presentation.template
+package com.resustack.api.domain.template.presentation
 
+import com.resustack.api.domain.template.application.TemplateService
 import com.resustack.api.domain.template.application.dto.TemplateCreateRequest
 import com.resustack.api.domain.template.application.dto.TemplateResponse
-import com.resustack.api.domain.template.application.TemplateService
-import com.resustack.common.model.ResponseData
 import com.resustack.api.domain.template.model.TemplateStatus
-import com.resustack.api.domain.template.presentation.template.swagger.TemplateControllerDocs
+import com.resustack.api.domain.template.presentation.swagger.TemplateControllerDocs
+import com.resustack.common.model.ResponseData
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -31,7 +31,7 @@ class TemplateController(
         @Valid @RequestBody request: TemplateCreateRequest
     ): ResponseEntity<ResponseData<TemplateResponse>> {
         val response = templateService.createTemplate(request)
-        return ResponseEntity.status(HttpStatus.CREATED).body(ResponseData.of(HttpStatus.CREATED, response))
+        return ResponseEntity.status(HttpStatus.CREATED).body(ResponseData.Companion.of(HttpStatus.CREATED, response))
     }
 
     /**
@@ -42,7 +42,7 @@ class TemplateController(
         @PathVariable id: String
     ): ResponseEntity<ResponseData<TemplateResponse>> {
         val response = templateService.getTemplateById(id)
-        return ResponseEntity.ok(ResponseData.of(HttpStatus.OK, response))
+        return ResponseEntity.ok(ResponseData.Companion.of(HttpStatus.OK, response))
     }
 
     /**
@@ -53,6 +53,6 @@ class TemplateController(
         @RequestParam status: TemplateStatus
     ): ResponseEntity<ResponseData<List<TemplateResponse>>> {
         val responses = templateService.findAllTemplatesByStatus(status)
-        return ResponseEntity.ok(ResponseData.of(HttpStatus.OK, responses))
+        return ResponseEntity.ok(ResponseData.Companion.of(HttpStatus.OK, responses))
     }
 }
