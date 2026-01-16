@@ -1,6 +1,8 @@
 package com.resustack.api.domain.resume.presentation
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.resustack.api.common.exception.ResourceNotFoundException
+import com.resustack.api.config.MongoTestContainerConfig
 import com.resustack.api.domain.resume.application.ResumeService
 import com.resustack.api.domain.resume.application.dto.ResumeCreateRequest
 import com.resustack.api.domain.resume.application.dto.ResumeResponse
@@ -11,38 +13,41 @@ import com.resustack.api.domain.resume.model.ResumeStatus
 import com.resustack.common.domain.user.User
 import com.resustack.common.domain.user.UserStatus
 import com.resustack.common.security.principal.PrincipalDetails
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.InjectMocks
-import org.mockito.Mock
-import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
-import org.springframework.http.HttpStatus
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
+import org.springframework.http.MediaType
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication
+import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.LocalDateTime
 
-@ExtendWith(MockitoExtension::class)
-class ResumeControllerTest {
+@AutoConfigureMockMvc
+class ResumeControllerTest : MongoTestContainerConfig() {
 
-    @Mock
-    lateinit var resumeService: ResumeService
+    @Autowired
+    private lateinit var mockMvc: MockMvc
 
-    @InjectMocks
-    lateinit var resumeController: ResumeController
+    @MockitoBean
+    private lateinit var resumeService: ResumeService
 
-    private lateinit var principal: PrincipalDetails
+    private val objectMapper = ObjectMapper()
+
     private val userId = 1L
 
-    @BeforeEach
-    fun setup() {
-        // PrincipalDetails 수동 생성 (SecurityContextHolder 불필요)
+    // PrincipalDetails를 포함한 Authentication 모킹 헬퍼 함수
+    private fun createMockAuthentication(): UsernamePasswordAuthenticationToken {
         val user = User(
             id = userId,
             email = "test@example.com",
@@ -52,14 +57,19 @@ class ResumeControllerTest {
             birthYear = "1990",
             status = UserStatus.ACTIVE
         )
-        principal = PrincipalDetails(user, mapOf("id" to userId))
+        val principal = PrincipalDetails(user, mapOf("id" to userId))
+        return UsernamePasswordAuthenticationToken(
+            principal,
+            null,
+            listOf(SimpleGrantedAuthority("ROLE_USER"))
+        )
     }
 
     @Nested
     inner class `이력서 생성` {
         @Test
         fun `성공 - 201 Created 응답`() {
-            // Given
+            // given
             val request = ResumeCreateRequest(
                 title = "New Resume",
                 templateId = "template-1",
@@ -84,14 +94,22 @@ class ResumeControllerTest {
 
             given(resumeService.create(eq(userId), any())).willReturn(response)
 
-            // When
-            val result = resumeController.createResume(principal, request)
+            // when & then
+            mockMvc.perform(
+                post("/api/resumes")
+                    .with(authentication(createMockAuthentication()))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            )
+                .andExpect(status().isCreated)
+                .andExpect(jsonPath("$.httpStatus").value(201))
+                .andExpect(jsonPath("$.data.id").value("resume-1"))
+                .andExpect(jsonPath("$.data.title").value("New Resume"))
+                .andExpect(jsonPath("$.data.userId").value(userId))
+                .andExpect(jsonPath("$.data.templateId").value("template-1"))
+                .andExpect(jsonPath("$.data.status").value("ACTIVE"))
+                .andExpect(jsonPath("$.data.isPublic").value(false))
 
-            // Then
-            assertEquals(HttpStatus.CREATED, result.statusCode)
-            assertNotNull(result.body)
-            assertEquals(201, result.body?.httpStatus)
-            assertEquals("resume-1", result.body?.data?.id)
             verify(resumeService).create(eq(userId), any())
         }
     }
@@ -100,7 +118,7 @@ class ResumeControllerTest {
     inner class `이력서 ID로 조회` {
         @Test
         fun `성공 - 200 OK 응답`() {
-            // Given
+            // given
             val resumeId = "resume-1"
             val response = ResumeResponse(
                 id = resumeId,
@@ -116,32 +134,40 @@ class ResumeControllerTest {
                 updatedAt = LocalDateTime.now()
             )
 
-            // Service signature change: expects userId (Long?)
             given(resumeService.getById(eq(resumeId), eq(userId))).willReturn(response)
 
-            // When
-            val result = resumeController.getResumeById(resumeId, principal)
+            // when & then
+            mockMvc.perform(
+                get("/api/resumes/{id}", resumeId)
+                    .with(authentication(createMockAuthentication()))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.httpStatus").value(200))
+                .andExpect(jsonPath("$.data.id").value(resumeId))
+                .andExpect(jsonPath("$.data.title").value("My Resume"))
+                .andExpect(jsonPath("$.data.userId").value(userId))
+                .andExpect(jsonPath("$.data.isPublic").value(true))
 
-            // Then
-            assertEquals(HttpStatus.OK, result.statusCode)
-            assertNotNull(result.body)
-            assertEquals(200, result.body?.httpStatus)
-            assertEquals(resumeId, result.body?.data?.id)
             verify(resumeService).getById(eq(resumeId), eq(userId))
         }
 
         @Test
         fun `실패 - 존재하지 않는 ID 시 예외 발생`() {
-            // Given
+            // given
             val resumeId = "non-existent"
-            // Service signature change: anyOrNull() for userId
             given(resumeService.getById(eq(resumeId), any()))
                 .willThrow(ResourceNotFoundException("이력서를 찾을 수 없습니다."))
 
-            // When & Then
-            assertThrows(ResourceNotFoundException::class.java) {
-                resumeController.getResumeById(resumeId, principal)
-            }
+            // when & then
+            mockMvc.perform(
+                get("/api/resumes/{id}", resumeId)
+                    .with(authentication(createMockAuthentication()))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isNotFound)
+
+            verify(resumeService).getById(eq(resumeId), any())
         }
     }
 
@@ -149,7 +175,7 @@ class ResumeControllerTest {
     inner class `내 이력서 목록 조회` {
         @Test
         fun `성공 - 200 OK 응답`() {
-            // Given
+            // given
             val summaryList = listOf(
                 ResumeSummaryResponse(
                     id = "1",
@@ -157,20 +183,52 @@ class ResumeControllerTest {
                     status = ResumeStatus.ACTIVE,
                     isPublic = true,
                     updatedAt = LocalDateTime.now()
+                ),
+                ResumeSummaryResponse(
+                    id = "2",
+                    title = "Resume 2",
+                    status = ResumeStatus.INACTIVE,
+                    isPublic = false,
+                    updatedAt = LocalDateTime.now()
                 )
             )
 
             given(resumeService.getAllByUserId(userId)).willReturn(summaryList)
 
-            // When
-            val result = resumeController.getMyResumes(principal)
+            // when & then
+            mockMvc.perform(
+                get("/api/resumes")
+                    .with(authentication(createMockAuthentication()))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.httpStatus").value(200))
+                .andExpect(jsonPath("$.data.length()").value(2))
+                .andExpect(jsonPath("$.data[0].id").value("1"))
+                .andExpect(jsonPath("$.data[0].title").value("Resume 1"))
+                .andExpect(jsonPath("$.data[0].status").value("ACTIVE"))
+                .andExpect(jsonPath("$.data[1].id").value("2"))
+                .andExpect(jsonPath("$.data[1].title").value("Resume 2"))
+                .andExpect(jsonPath("$.data[1].status").value("INACTIVE"))
 
-            // Then
-            assertEquals(HttpStatus.OK, result.statusCode)
-            assertNotNull(result.body)
-            assertEquals(200, result.body?.httpStatus)
-            assertEquals(1, result.body?.data?.size)
-            assertEquals("Resume 1", result.body?.data?.get(0)?.title)
+            verify(resumeService).getAllByUserId(userId)
+        }
+
+        @Test
+        fun `성공 - 빈 목록 200 OK 응답`() {
+            // given
+            given(resumeService.getAllByUserId(userId)).willReturn(emptyList())
+
+            // when & then
+            mockMvc.perform(
+                get("/api/resumes")
+                    .with(authentication(createMockAuthentication()))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.httpStatus").value(200))
+                .andExpect(jsonPath("$.data.length()").value(0))
+
             verify(resumeService).getAllByUserId(userId)
         }
     }

@@ -45,8 +45,15 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-data-mongodb-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-mongodb-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testImplementation 'org.springframework.security:spring-security-test'
 
     // Mockito
     testImplementation 'org.mockito:mockito-core'
     testImplementation "org.mockito.kotlin:mockito-kotlin:${MOCKITO_KOTLIN_VERSION}"
+
+    // Testcontainers
+    testImplementation "org.testcontainers:testcontainers:${TESTCONTAINERS_VERSION}"
+    testImplementation "org.testcontainers:junit-jupiter:${TESTCONTAINERS_VERSION}"
+    testImplementation "org.testcontainers:mongodb:${TESTCONTAINERS_VERSION}"
 }

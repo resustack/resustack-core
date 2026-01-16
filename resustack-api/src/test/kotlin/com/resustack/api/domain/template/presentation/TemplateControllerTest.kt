@@ -1,7 +1,9 @@
 package com.resustack.api.domain.template.presentation
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.resustack.api.common.exception.ResourceConflictException
 import com.resustack.api.common.exception.ResourceNotFoundException
+import com.resustack.api.config.MongoTestContainerConfig
 import com.resustack.api.domain.template.application.TemplateService
 import com.resustack.api.domain.template.application.dto.TemplateCreateRequest
 import com.resustack.api.domain.template.application.dto.TemplateResponse
@@ -9,30 +11,32 @@ import com.resustack.api.domain.template.model.LayoutType
 import com.resustack.api.domain.template.model.Spacing
 import com.resustack.api.domain.template.model.TemplateStatus
 import com.resustack.api.domain.template.model.Theme
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.times
+import org.mockito.kotlin.given
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
-import org.springframework.http.HttpStatus
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
+import org.springframework.http.MediaType
+import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.LocalDateTime
 
-class TemplateControllerTest {
+@AutoConfigureMockMvc(addFilters = false) // Security 필터 비활성화
+class TemplateControllerTest : MongoTestContainerConfig() {
 
-    private lateinit var templateController: TemplateController
+    @Autowired
+    private lateinit var mockMvc: MockMvc
+
+    @MockitoBean
     private lateinit var templateService: TemplateService
 
-    @BeforeEach
-    fun setUp() {
-        templateService = mock()
-        templateController = TemplateController(templateService)
-    }
+    private val objectMapper = ObjectMapper()
 
     // 공통 테스트 데이터
     private fun createSampleTheme() = Theme(
@@ -79,40 +83,44 @@ class TemplateControllerTest {
 
         @Test
         fun `성공 - 201 Created 응답`() {
-            // Given
+            // given
             val request = createSampleRequest()
             val response = createSampleResponse()
-            whenever(templateService.createTemplate(any())).thenReturn(response)
+            given(templateService.createTemplate(any())).willReturn(response)
 
-            // When
-            val result = templateController.createTemplate(request)
+            // when & then
+            mockMvc.perform(
+                post("/api/templates")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            )
+                .andExpect(status().isCreated)
+                .andExpect(jsonPath("$.httpStatus").value(201))
+                .andExpect(jsonPath("$.data.id").value("template-123"))
+                .andExpect(jsonPath("$.data.name").value("Modern Template"))
+                .andExpect(jsonPath("$.data.description").value("A modern resume template"))
+                .andExpect(jsonPath("$.data.layoutType").value("SINGLE_COLUMN"))
+                .andExpect(jsonPath("$.data.status").value("ACTIVE"))
 
-            // Then
-            assertEquals(HttpStatus.CREATED, result.statusCode)
-            assertNotNull(result.body)
-            assertEquals(201, result.body?.httpStatus)
-            assertEquals("template-123", result.body?.data?.id)
-            assertEquals("Modern Template", result.body?.data?.name)
-            assertEquals("A modern resume template", result.body?.data?.description)
-            assertEquals(LayoutType.SINGLE_COLUMN, result.body?.data?.layoutType)
-            assertEquals(TemplateStatus.ACTIVE, result.body?.data?.status)
-
-            verify(templateService, times(1)).createTemplate(any())
+            verify(templateService).createTemplate(any())
         }
 
         @Test
         fun `실패 - 중복된 이름 시 예외 발생`() {
-            // Given
+            // given
             val request = createSampleRequest(name = "Duplicate Template")
-            whenever(templateService.createTemplate(any()))
-                .thenThrow(ResourceConflictException("이미 존재하는 템플릿 이름입니다: Duplicate Template"))
+            given(templateService.createTemplate(any()))
+                .willThrow(ResourceConflictException("이미 존재하는 템플릿 이름입니다: Duplicate Template"))
 
-            // When & Then
-            assertThrows<ResourceConflictException> {
-                templateController.createTemplate(request)
-            }
+            // when & then
+            mockMvc.perform(
+                post("/api/templates")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request))
+            )
+                .andExpect(status().isConflict)
 
-            verify(templateService, times(1)).createTemplate(any())
+            verify(templateService).createTemplate(any())
         }
     }
 
@@ -121,38 +129,40 @@ class TemplateControllerTest {
 
         @Test
         fun `성공 - 200 OK 응답`() {
-            // Given
+            // given
             val templateId = "template-123"
             val response = createSampleResponse(id = templateId)
-            whenever(templateService.getTemplateById(templateId)).thenReturn(response)
+            given(templateService.getTemplateById(templateId)).willReturn(response)
 
-            // When
-            val result = templateController.getTemplateById(templateId)
+            // when & then
+            mockMvc.perform(
+                get("/api/templates/{id}", templateId)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.httpStatus").value(200))
+                .andExpect(jsonPath("$.data.id").value(templateId))
+                .andExpect(jsonPath("$.data.name").value("Modern Template"))
+                .andExpect(jsonPath("$.data.layoutType").value("SINGLE_COLUMN"))
 
-            // Then
-            assertEquals(HttpStatus.OK, result.statusCode)
-            assertNotNull(result.body)
-            assertEquals(200, result.body?.httpStatus)
-            assertEquals(templateId, result.body?.data?.id)
-            assertEquals("Modern Template", result.body?.data?.name)
-            assertEquals(LayoutType.SINGLE_COLUMN, result.body?.data?.layoutType)
-
-            verify(templateService, times(1)).getTemplateById(templateId)
+            verify(templateService).getTemplateById(templateId)
         }
 
         @Test
         fun `실패 - 존재하지 않는 ID 시 예외 발생`() {
-            // Given
+            // given
             val templateId = "non-existent-id"
-            whenever(templateService.getTemplateById(templateId))
-                .thenThrow(ResourceNotFoundException("템플릿을 찾을 수 없습니다. ID: $templateId"))
+            given(templateService.getTemplateById(templateId))
+                .willThrow(ResourceNotFoundException("템플릿을 찾을 수 없습니다. ID: $templateId"))
 
-            // When & Then
-            assertThrows<ResourceNotFoundException> {
-                templateController.getTemplateById(templateId)
-            }
+            // when & then
+            mockMvc.perform(
+                get("/api/templates/{id}", templateId)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isNotFound)
 
-            verify(templateService, times(1)).getTemplateById(templateId)
+            verify(templateService).getTemplateById(templateId)
         }
     }
 
@@ -161,7 +171,7 @@ class TemplateControllerTest {
 
         @Test
         fun `성공 - ACTIVE 상태 200 OK 응답`() {
-            // Given
+            // given
             val status = TemplateStatus.ACTIVE
             val responses = listOf(
                 createSampleResponse(
@@ -177,40 +187,42 @@ class TemplateControllerTest {
                     layoutType = LayoutType.TWO_COLUMN_LEFT
                 )
             )
-            whenever(templateService.findAllTemplatesByStatus(status)).thenReturn(responses)
+            given(templateService.findAllTemplatesByStatus(status)).willReturn(responses)
 
-            // When
-            val result = templateController.getTemplatesByStatus(status)
+            // when & then
+            mockMvc.perform(
+                get("/api/templates")
+                    .param("status", status.name)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.httpStatus").value(200))
+                .andExpect(jsonPath("$.data.length()").value(2))
+                .andExpect(jsonPath("$.data[0].id").value("template-1"))
+                .andExpect(jsonPath("$.data[0].name").value("Template 1"))
+                .andExpect(jsonPath("$.data[1].id").value("template-2"))
+                .andExpect(jsonPath("$.data[1].name").value("Template 2"))
 
-            // Then
-            assertEquals(HttpStatus.OK, result.statusCode)
-            assertNotNull(result.body)
-            assertEquals(200, result.body?.httpStatus)
-            assertEquals(2, result.body?.data?.size)
-            assertEquals("template-1", result.body?.data?.get(0)?.id)
-            assertEquals("Template 1", result.body?.data?.get(0)?.name)
-            assertEquals("template-2", result.body?.data?.get(1)?.id)
-            assertEquals("Template 2", result.body?.data?.get(1)?.name)
-
-            verify(templateService, times(1)).findAllTemplatesByStatus(status)
+            verify(templateService).findAllTemplatesByStatus(status)
         }
 
         @Test
         fun `성공 - INACTIVE 상태 빈 목록 200 OK 응답`() {
-            // Given
+            // given
             val status = TemplateStatus.INACTIVE
-            whenever(templateService.findAllTemplatesByStatus(status)).thenReturn(emptyList())
+            given(templateService.findAllTemplatesByStatus(status)).willReturn(emptyList())
 
-            // When
-            val result = templateController.getTemplatesByStatus(status)
+            // when & then
+            mockMvc.perform(
+                get("/api/templates")
+                    .param("status", status.name)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.httpStatus").value(200))
+                .andExpect(jsonPath("$.data.length()").value(0))
 
-            // Then
-            assertEquals(HttpStatus.OK, result.statusCode)
-            assertNotNull(result.body)
-            assertEquals(200, result.body?.httpStatus)
-            assertEquals(0, result.body?.data?.size)
-
-            verify(templateService, times(1)).findAllTemplatesByStatus(status)
+            verify(templateService).findAllTemplatesByStatus(status)
         }
     }
 }
