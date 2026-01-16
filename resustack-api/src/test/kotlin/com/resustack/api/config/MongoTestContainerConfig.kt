@@ -20,10 +20,9 @@ import org.testcontainers.utility.DockerImageName
 abstract class MongoTestContainerConfig {
 
     companion object {
-        // MongoDB 7.0.15 이미지를 사용하는 컨테이너 (모든 테스트에서 공유)
-        private val mongoDBContainer = MongoDBContainer(DockerImageName.parse("mongo:7.0.15"))
+        private val mongoDBContainer = MongoDBContainer(DockerImageName.parse("mongo:8.0"))
             .apply {
-                start() // 컨테이너 시작
+                start()
             }
 
         /**
