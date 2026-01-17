@@ -4,6 +4,7 @@ import com.resustack.api.domain.resume.application.ResumeService
 import com.resustack.api.domain.resume.application.dto.ResumeCreateRequest
 import com.resustack.api.domain.resume.application.dto.ResumeResponse
 import com.resustack.api.domain.resume.application.dto.ResumeSummaryResponse
+import com.resustack.api.domain.resume.application.dto.ResumeUpdateRequest
 import com.resustack.api.domain.resume.presentation.swagger.ResumeControllerDocs
 import com.resustack.common.model.ResponseData
 import com.resustack.common.security.principal.PrincipalDetails
@@ -11,9 +12,11 @@ import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -51,5 +54,26 @@ class ResumeController(
         val userId = requireNotNull(principal.getUser().id)
         val responses = resumeService.getAllByUserId(userId)
         return ResponseEntity.ok(ResponseData.of(HttpStatus.OK, responses))
+    }
+
+    @PutMapping("/{id}", version = "1.0")
+    override fun updateResume(
+        @PathVariable id: String,
+        @AuthenticationPrincipal principal: PrincipalDetails,
+        @Valid @RequestBody request: ResumeUpdateRequest
+    ): ResponseEntity<ResponseData<ResumeResponse>> {
+        val userId = requireNotNull(principal.getUser().id)
+        val response = resumeService.update(id, userId, request)
+        return ResponseEntity.ok(ResponseData.of(HttpStatus.OK, response))
+    }
+
+    @DeleteMapping("/{id}", version = "1.0")
+    override fun deleteResume(
+        @PathVariable id: String,
+        @AuthenticationPrincipal principal: PrincipalDetails
+    ): ResponseEntity<ResponseData<Unit>> {
+        val userId = requireNotNull(principal.getUser().id)
+        resumeService.delete(id, userId)
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ResponseData.of(HttpStatus.NO_CONTENT, Unit))
     }
 }

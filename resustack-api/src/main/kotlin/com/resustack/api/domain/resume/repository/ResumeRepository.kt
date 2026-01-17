@@ -9,4 +9,9 @@ interface ResumeRepository {
     fun findById(id: String): Resume
 
     fun findAllByUserId(userId: Long): List<Resume>
+
+    /**
+     * soft delete: status를 INACTIVE로 변경
+     */
+    fun delete(id: String): Resume
 }
