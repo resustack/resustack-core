@@ -3,6 +3,7 @@ package com.resustack.api.domain.resume.presentation.swagger
 import com.resustack.api.domain.resume.application.dto.ResumeCreateRequest
 import com.resustack.api.domain.resume.application.dto.ResumeResponse
 import com.resustack.api.domain.resume.application.dto.ResumeSummaryResponse
+import com.resustack.api.domain.resume.application.dto.ResumeUpdateRequest
 import com.resustack.common.model.ResponseData
 import com.resustack.common.security.principal.PrincipalDetails
 import io.swagger.v3.oas.annotations.Operation
@@ -54,4 +55,35 @@ interface ResumeControllerDocs {
     fun getMyResumes(
         @Parameter(hidden = true) @AuthenticationPrincipal principal: PrincipalDetails
     ): ResponseEntity<ResponseData<List<ResumeSummaryResponse>>>
+
+    @Operation(summary = "이력서 수정", description = "이력서를 수정합니다. 본인이 작성한 이력서만 수정할 수 있습니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "이력서 수정 성공"),
+            ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            ApiResponse(responseCode = "403", description = "수정 권한 없음"),
+            ApiResponse(responseCode = "404", description = "이력서를 찾을 수 없음")
+        ]
+    )
+    fun updateResume(
+        @Parameter(description = "이력서 ID", required = true)
+        @PathVariable id: String,
+        @Parameter(hidden = true) @AuthenticationPrincipal principal: PrincipalDetails,
+        @Parameter(description = "이력서 수정 요청 정보", required = true)
+        @Valid @RequestBody request: ResumeUpdateRequest
+    ): ResponseEntity<ResponseData<ResumeResponse>>
+
+    @Operation(summary = "이력서 삭제", description = "이력서를 삭제합니다 (Soft Delete). 본인이 작성한 이력서만 삭제할 수 있습니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "이력서 삭제 성공"),
+            ApiResponse(responseCode = "403", description = "삭제 권한 없음"),
+            ApiResponse(responseCode = "404", description = "이력서를 찾을 수 없음")
+        ]
+    )
+    fun deleteResume(
+        @Parameter(description = "이력서 ID", required = true)
+        @PathVariable id: String,
+        @Parameter(hidden = true) @AuthenticationPrincipal principal: PrincipalDetails
+    ): ResponseEntity<ResponseData<Unit>>
 }
