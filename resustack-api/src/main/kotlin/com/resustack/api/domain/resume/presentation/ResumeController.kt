@@ -74,6 +74,6 @@ class ResumeController(
     ): ResponseEntity<ResponseData<Unit>> {
         val userId = requireNotNull(principal.getUser().id)
         resumeService.delete(id, userId)
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ResponseData.of(HttpStatus.NO_CONTENT, Unit))
+        return ResponseEntity.ok(ResponseData.of(HttpStatus.OK, Unit))
     }
 }

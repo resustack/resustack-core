@@ -341,7 +341,7 @@ class ResumeControllerTest : MongoTestContainerConfig() {
     @Nested
     inner class `이력서 삭제` {
         @Test
-        fun `성공 - 204 No Content 응답`() {
+        fun `성공 - 200 OK 응답`() {
             // given
             val resumeId = "resume-1"
             willDoNothing().given(resumeService).delete(eq(resumeId), eq(userId))
@@ -352,8 +352,8 @@ class ResumeControllerTest : MongoTestContainerConfig() {
                     .with(authentication(createMockAuthentication()))
                     .contentType(MediaType.APPLICATION_JSON)
             )
-                .andExpect(status().isNoContent)
-                .andExpect(jsonPath("$.httpStatus").value(204))
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.httpStatus").value(200))
 
             verify(resumeService).delete(eq(resumeId), eq(userId))
         }

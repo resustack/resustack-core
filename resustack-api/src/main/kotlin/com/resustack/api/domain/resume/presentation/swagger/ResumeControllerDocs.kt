@@ -76,7 +76,7 @@ interface ResumeControllerDocs {
     @Operation(summary = "이력서 삭제", description = "이력서를 삭제합니다 (Soft Delete). 본인이 작성한 이력서만 삭제할 수 있습니다.")
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "204", description = "이력서 삭제 성공"),
+            ApiResponse(responseCode = "200", description = "이력서 삭제 성공"),
             ApiResponse(responseCode = "403", description = "삭제 권한 없음"),
             ApiResponse(responseCode = "404", description = "이력서를 찾을 수 없음")
         ]
