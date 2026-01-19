@@ -35,4 +35,7 @@ dependencies {
     implementation "io.jsonwebtoken:jjwt-api:${JJWT_VERSION}"
     runtimeOnly "io.jsonwebtoken:jjwt-impl:${JJWT_VERSION}"
     runtimeOnly "io.jsonwebtoken:jjwt-jackson:${JJWT_VERSION}"
+
+    // Swagger (OpenAPI annotations for DTO documentation)
+    implementation "org.springdoc:springdoc-openapi-starter-common:${SWAGGER_UI_VERSION}"
 }

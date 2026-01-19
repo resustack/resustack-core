@@ -14,6 +14,7 @@ import com.resustack.api.domain.resume.model.Profile
 import com.resustack.api.domain.resume.model.ResumeStatus
 import com.resustack.common.domain.user.User
 import com.resustack.common.domain.user.UserStatus
+import com.resustack.common.model.PaginationResponse
 import com.resustack.common.security.principal.PrincipalDetails
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -192,37 +193,65 @@ class ResumeControllerTest : MongoTestContainerConfig() {
                 ResumeSummaryResponse(
                     id = "2",
                     title = "Resume 2",
-                    status = ResumeStatus.INACTIVE,
+                    status = ResumeStatus.ACTIVE,
                     isPublic = false,
                     updatedAt = LocalDateTime.now()
                 )
             )
+            val paginationResponse = PaginationResponse(
+                content = summaryList,
+                totalElements = 2L,
+                totalPages = 1,
+                currentPage = 0,
+                pageSize = 10,
+                hasNext = false,
+                hasPrevious = false
+            )
 
-            given(resumeService.getAllByUserId(userId)).willReturn(summaryList)
+            given(resumeService.getAllByUserId(eq(userId), any())).willReturn(paginationResponse)
 
             // when & then
             mockMvc.perform(
                 get("/api/resumes")
                     .with(authentication(createMockAuthentication()))
+                    .param("page", "0")
+                    .param("size", "10")
+                    .param("sort", "updatedAt,desc")
                     .contentType(MediaType.APPLICATION_JSON)
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.httpStatus").value(200))
-                .andExpect(jsonPath("$.data.length()").value(2))
-                .andExpect(jsonPath("$.data[0].id").value("1"))
-                .andExpect(jsonPath("$.data[0].title").value("Resume 1"))
-                .andExpect(jsonPath("$.data[0].status").value("ACTIVE"))
-                .andExpect(jsonPath("$.data[1].id").value("2"))
-                .andExpect(jsonPath("$.data[1].title").value("Resume 2"))
-                .andExpect(jsonPath("$.data[1].status").value("INACTIVE"))
+                .andExpect(jsonPath("$.data.content.length()").value(2))
+                .andExpect(jsonPath("$.data.content[0].id").value("1"))
+                .andExpect(jsonPath("$.data.content[0].title").value("Resume 1"))
+                .andExpect(jsonPath("$.data.content[0].status").value("ACTIVE"))
+                .andExpect(jsonPath("$.data.content[1].id").value("2"))
+                .andExpect(jsonPath("$.data.content[1].title").value("Resume 2"))
+                .andExpect(jsonPath("$.data.content[1].status").value("ACTIVE"))
+                .andExpect(jsonPath("$.data.totalElements").value(2))
+                .andExpect(jsonPath("$.data.totalPages").value(1))
+                .andExpect(jsonPath("$.data.currentPage").value(0))
+                .andExpect(jsonPath("$.data.pageSize").value(10))
+                .andExpect(jsonPath("$.data.hasNext").value(false))
+                .andExpect(jsonPath("$.data.hasPrevious").value(false))
 
-            verify(resumeService).getAllByUserId(userId)
+            verify(resumeService).getAllByUserId(eq(userId), any())
         }
 
         @Test
         fun `성공 - 빈 목록 200 OK 응답`() {
             // given
-            given(resumeService.getAllByUserId(userId)).willReturn(emptyList())
+            val paginationResponse = PaginationResponse<ResumeSummaryResponse>(
+                content = emptyList(),
+                totalElements = 0L,
+                totalPages = 0,
+                currentPage = 0,
+                pageSize = 10,
+                hasNext = false,
+                hasPrevious = false
+            )
+
+            given(resumeService.getAllByUserId(eq(userId), any())).willReturn(paginationResponse)
 
             // when & then
             mockMvc.perform(
@@ -232,9 +261,57 @@ class ResumeControllerTest : MongoTestContainerConfig() {
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.httpStatus").value(200))
-                .andExpect(jsonPath("$.data.length()").value(0))
+                .andExpect(jsonPath("$.data.content.length()").value(0))
+                .andExpect(jsonPath("$.data.totalElements").value(0))
+                .andExpect(jsonPath("$.data.totalPages").value(0))
 
-            verify(resumeService).getAllByUserId(userId)
+            verify(resumeService).getAllByUserId(eq(userId), any())
+        }
+
+        @Test
+        fun `성공 - 페이징 파라미터 적용`() {
+            // given
+            val summaryList = listOf(
+                ResumeSummaryResponse(
+                    id = "1",
+                    title = "Resume 1",
+                    status = ResumeStatus.ACTIVE,
+                    isPublic = true,
+                    updatedAt = LocalDateTime.now()
+                )
+            )
+            val paginationResponse = PaginationResponse(
+                content = summaryList,
+                totalElements = 15L,
+                totalPages = 3,
+                currentPage = 1,
+                pageSize = 5,
+                hasNext = true,
+                hasPrevious = true
+            )
+
+            given(resumeService.getAllByUserId(eq(userId), any())).willReturn(paginationResponse)
+
+            // when & then
+            mockMvc.perform(
+                get("/api/resumes")
+                    .with(authentication(createMockAuthentication()))
+                    .param("page", "1")
+                    .param("size", "5")
+                    .param("sort", "createdAt,asc")
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.httpStatus").value(200))
+                .andExpect(jsonPath("$.data.content.length()").value(1))
+                .andExpect(jsonPath("$.data.totalElements").value(15))
+                .andExpect(jsonPath("$.data.totalPages").value(3))
+                .andExpect(jsonPath("$.data.currentPage").value(1))
+                .andExpect(jsonPath("$.data.pageSize").value(5))
+                .andExpect(jsonPath("$.data.hasNext").value(true))
+                .andExpect(jsonPath("$.data.hasPrevious").value(true))
+
+            verify(resumeService).getAllByUserId(eq(userId), any())
         }
     }
 

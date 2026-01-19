@@ -10,9 +10,12 @@ import com.resustack.api.domain.resume.model.Resume
 import com.resustack.api.domain.resume.model.ResumeStatus
 import com.resustack.api.domain.resume.repository.ResumeRepository
 import com.resustack.api.domain.template.repository.TemplateRepository
+import com.resustack.common.model.PaginationRequest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -20,8 +23,11 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.whenever
 import org.mockito.kotlin.verify
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
@@ -187,9 +193,10 @@ class ResumeServiceTest {
     @Nested
     inner class GetResumesByUserId {
         @Test
-        fun `성공`() {
+        fun `성공 - 첫 페이지 조회`() {
             // given
             val userId = 1L
+            val paginationRequest = PaginationRequest(page = 0, size = 10, sort = "updatedAt,desc")
             val resumes = listOf(
                 Resume(
                     id = "1",
@@ -208,16 +215,95 @@ class ResumeServiceTest {
                     status = ResumeStatus.ACTIVE
                 )
             )
+            val pageable = PageRequest.of(0, 10, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "updatedAt"))
+            val page = PageImpl(resumes, pageable, 2)
 
-            whenever(resumeRepository.findAllByUserId(userId)).thenReturn(resumes)
+            whenever(resumeRepository.findAllByUserIdAndStatus(eq(userId), eq(ResumeStatus.ACTIVE), any()))
+                .thenReturn(page)
 
             // when
-            val results = resumeService.getAllByUserId(userId)
+            val result = resumeService.getAllByUserId(userId, paginationRequest)
 
             // then
-            assertEquals(2, results.size)
-            assertEquals("Resume 1", results[0].title)
-            assertEquals("Resume 2", results[1].title)
+            assertEquals(2, result.content.size)
+            assertEquals("Resume 1", result.content[0].title)
+            assertEquals("Resume 2", result.content[1].title)
+            assertEquals(2L, result.totalElements)
+            assertEquals(1, result.totalPages)
+            assertEquals(0, result.currentPage)
+            assertEquals(10, result.pageSize)
+            assertFalse(result.hasNext)
+            assertFalse(result.hasPrevious)
+
+            verify(resumeRepository).findAllByUserIdAndStatus(eq(userId), eq(ResumeStatus.ACTIVE), any())
+        }
+
+        @Test
+        fun `성공 - 빈 페이지`() {
+            // given
+            val userId = 1L
+            val paginationRequest = PaginationRequest(page = 0, size = 10, sort = "updatedAt,desc")
+            val pageable = PageRequest.of(0, 10, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "updatedAt"))
+            val page = PageImpl<Resume>(emptyList(), pageable, 0)
+
+            whenever(resumeRepository.findAllByUserIdAndStatus(eq(userId), eq(ResumeStatus.ACTIVE), any()))
+                .thenReturn(page)
+
+            // when
+            val result = resumeService.getAllByUserId(userId, paginationRequest)
+
+            // then
+            assertEquals(0, result.content.size)
+            assertEquals(0L, result.totalElements)
+            assertEquals(0, result.totalPages)
+            assertFalse(result.hasNext)
+            assertFalse(result.hasPrevious)
+
+            verify(resumeRepository).findAllByUserIdAndStatus(eq(userId), eq(ResumeStatus.ACTIVE), any())
+        }
+
+        @Test
+        fun `성공 - 여러 페이지 중 첫 페이지 조회`() {
+            // given
+            val userId = 1L
+            val paginationRequest = PaginationRequest(page = 0, size = 2, sort = "updatedAt,desc")
+            val resumes = listOf(
+                Resume(
+                    id = "1",
+                    userId = userId,
+                    title = "Resume 1",
+                    templateId = "t1",
+                    profile = Profile(name = "User"),
+                    status = ResumeStatus.ACTIVE
+                ),
+                Resume(
+                    id = "2",
+                    userId = userId,
+                    title = "Resume 2",
+                    templateId = "t2",
+                    profile = Profile(name = "User"),
+                    status = ResumeStatus.ACTIVE
+                )
+            )
+            val pageable = PageRequest.of(0, 2, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "updatedAt"))
+            val page = PageImpl(resumes, pageable, 5) // 전체 5개
+
+            whenever(resumeRepository.findAllByUserIdAndStatus(eq(userId), eq(ResumeStatus.ACTIVE), any()))
+                .thenReturn(page)
+
+            // when
+            val result = resumeService.getAllByUserId(userId, paginationRequest)
+
+            // then
+            assertEquals(2, result.content.size)
+            assertEquals(5L, result.totalElements)
+            assertEquals(3, result.totalPages)
+            assertEquals(0, result.currentPage)
+            assertEquals(2, result.pageSize)
+            assertTrue(result.hasNext)
+            assertFalse(result.hasPrevious)
+
+            verify(resumeRepository).findAllByUserIdAndStatus(eq(userId), eq(ResumeStatus.ACTIVE), any())
         }
     }
 

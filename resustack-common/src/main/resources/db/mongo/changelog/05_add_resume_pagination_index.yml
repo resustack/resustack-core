@@ -1,0 +1,15 @@
+databaseChangeLog:
+  # --- Resumes Collection Pagination Index ---
+  - changeSet:
+      id: create-resumes-userid-status-updatedat-compound-index
+      author: resustack
+      changes:
+        - createIndex:
+            collectionName: resumes
+            keys: '{ userId: 1, status: 1, updatedAt: -1 }'
+            options: '{ name: "idx_userId_status_updatedAt" }'
+      rollback:
+        - dropIndex:
+            collectionName: resumes
+            indexName: idx_userId_status_updatedAt
+      comment: 이력서 목록 조회 페이징 성능 최적화를 위한 복합 인덱스 (userId + status 필터링 + updatedAt 정렬)

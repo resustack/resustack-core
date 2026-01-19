@@ -6,6 +6,8 @@ import com.resustack.api.domain.resume.application.dto.ResumeResponse
 import com.resustack.api.domain.resume.application.dto.ResumeSummaryResponse
 import com.resustack.api.domain.resume.application.dto.ResumeUpdateRequest
 import com.resustack.api.domain.resume.presentation.swagger.ResumeControllerDocs
+import com.resustack.common.model.PaginationRequest
+import com.resustack.common.model.PaginationResponse
 import com.resustack.common.model.ResponseData
 import com.resustack.common.security.principal.PrincipalDetails
 import jakarta.validation.Valid
@@ -14,6 +16,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -49,10 +52,11 @@ class ResumeController(
 
     @GetMapping(version = "1.0")
     override fun getMyResumes(
-        @AuthenticationPrincipal principal: PrincipalDetails
-    ): ResponseEntity<ResponseData<List<ResumeSummaryResponse>>> {
+        @AuthenticationPrincipal principal: PrincipalDetails,
+        @Valid @ModelAttribute paginationRequest: PaginationRequest
+    ): ResponseEntity<ResponseData<PaginationResponse<ResumeSummaryResponse>>> {
         val userId = requireNotNull(principal.getUser().id)
-        val responses = resumeService.getAllByUserId(userId)
+        val responses = resumeService.getAllByUserId(userId, paginationRequest)
         return ResponseEntity.ok(ResponseData.of(HttpStatus.OK, responses))
     }
 
