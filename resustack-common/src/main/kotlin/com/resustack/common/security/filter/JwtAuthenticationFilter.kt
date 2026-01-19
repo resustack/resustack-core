@@ -1,5 +1,6 @@
 package com.resustack.common.security.filter
 
+import com.resustack.common.security.cookie.CookieUtils
 import com.resustack.common.security.jwt.JwtTokenProvider
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -39,11 +40,20 @@ class JwtAuthenticationFilter(
     }
 
     private fun resolveToken(request: HttpServletRequest): String? {
+        // 1. Authorization 헤더 확인 (기존 API 클라이언트 호환성 유지)
         val bearerToken = request.getHeader(AUTHORIZATION_HEADER)
-        return if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
-            bearerToken.substring(BEARER_PREFIX.length)
-        } else {
-            null
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
+            log.debug("Token resolved from Authorization header")
+            return bearerToken.substring(BEARER_PREFIX.length)
         }
+
+        // 2. 쿠키에서 토큰 추출 (OAuth2 로그인 이후 브라우저 요청)
+        val cookieToken = CookieUtils.getAccessTokenFromCookies(request.cookies)
+        if (cookieToken != null) {
+            log.debug("Token resolved from cookie")
+            return cookieToken
+        }
+
+        return null
     }
 }
