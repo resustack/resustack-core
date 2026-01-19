@@ -8,6 +8,8 @@ import com.resustack.api.domain.resume.application.dto.ResumeUpdateRequest
 import com.resustack.api.domain.resume.model.ResumeStatus
 import com.resustack.api.domain.resume.repository.ResumeRepository
 import com.resustack.api.domain.template.repository.TemplateRepository
+import com.resustack.common.model.PaginationRequest
+import com.resustack.common.model.PaginationResponse
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.security.access.AccessDeniedException
@@ -48,13 +50,14 @@ class ResumeService(
     }
 
     /**
-     * 내 이력서 목록 조회 (요약 정보, ACTIVE 상태만)
+     * 내 이력서 목록 조회 (요약 정보, ACTIVE 상태만, 페이징 지원)
+     * DB 레벨에서 필터링 및 페이징 처리하여 성능 최적화
      */
     @Transactional(readOnly = true)
-    fun getAllByUserId(userId: Long): List<ResumeSummaryResponse> {
-        return resumeRepository.findAllByUserId(userId)
-            .filter { it.status == ResumeStatus.ACTIVE }
-            .map { ResumeSummaryResponse.from(it) }
+    fun getAllByUserId(userId: Long, paginationRequest: PaginationRequest): PaginationResponse<ResumeSummaryResponse> {
+        val pageable = paginationRequest.toPageable()
+        val resumePage = resumeRepository.findAllByUserIdAndStatus(userId, ResumeStatus.ACTIVE, pageable)
+        return PaginationResponse.from(resumePage) { ResumeSummaryResponse.from(it) }
     }
 
     /**

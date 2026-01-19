@@ -5,6 +5,8 @@ import com.resustack.api.domain.resume.model.Resume
 import com.resustack.api.domain.resume.model.ResumeStatus
 import com.resustack.api.domain.resume.model.repository.ResumeMongoRepository
 import com.resustack.api.domain.resume.repository.ResumeRepository
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Repository
 
@@ -24,6 +26,15 @@ class ResumeRepositoryImpl(
 
     override fun findAllByUserId(userId: Long): List<Resume> {
         return resumeMongoRepository.findAllByUserId(userId)
+            .map { it.toDomain() }
+    }
+
+    override fun findAllByUserIdAndStatus(
+        userId: Long,
+        status: ResumeStatus,
+        pageable: Pageable
+    ): Page<Resume> {
+        return resumeMongoRepository.findAllByUserIdAndStatus(userId, status, pageable)
             .map { it.toDomain() }
     }
 

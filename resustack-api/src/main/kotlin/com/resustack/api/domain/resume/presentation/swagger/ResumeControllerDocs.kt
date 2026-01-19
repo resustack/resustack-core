@@ -4,6 +4,8 @@ import com.resustack.api.domain.resume.application.dto.ResumeCreateRequest
 import com.resustack.api.domain.resume.application.dto.ResumeResponse
 import com.resustack.api.domain.resume.application.dto.ResumeSummaryResponse
 import com.resustack.api.domain.resume.application.dto.ResumeUpdateRequest
+import com.resustack.common.model.PaginationRequest
+import com.resustack.common.model.PaginationResponse
 import com.resustack.common.model.ResponseData
 import com.resustack.common.security.principal.PrincipalDetails
 import io.swagger.v3.oas.annotations.Operation
@@ -12,8 +14,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import org.springdoc.core.annotations.ParameterObject
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 
@@ -46,15 +50,20 @@ interface ResumeControllerDocs {
         @Parameter(hidden = true) @AuthenticationPrincipal principal: PrincipalDetails?
     ): ResponseEntity<ResponseData<ResumeResponse>>
 
-    @Operation(summary = "내 이력서 목록 조회", description = "로그인한 사용자의 이력서 목록을 조회합니다 (요약 정보).")
+    @Operation(
+        summary = "내 이력서 목록 조회",
+        description = "로그인한 사용자의 이력서 목록을 페이징 조회합니다 (요약 정보, ACTIVE 상태만)."
+    )
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "200", description = "이력서 목록 조회 성공")
+            ApiResponse(responseCode = "200", description = "이력서 목록 조회 성공"),
+            ApiResponse(responseCode = "400", description = "잘못된 페이징 파라미터")
         ]
     )
     fun getMyResumes(
-        @Parameter(hidden = true) @AuthenticationPrincipal principal: PrincipalDetails
-    ): ResponseEntity<ResponseData<List<ResumeSummaryResponse>>>
+        @Parameter(hidden = true) @AuthenticationPrincipal principal: PrincipalDetails,
+        @ParameterObject @Valid @ModelAttribute paginationRequest: PaginationRequest
+    ): ResponseEntity<ResponseData<PaginationResponse<ResumeSummaryResponse>>>
 
     @Operation(summary = "이력서 수정", description = "이력서를 수정합니다. 본인이 작성한 이력서만 수정할 수 있습니다.")
     @ApiResponses(
