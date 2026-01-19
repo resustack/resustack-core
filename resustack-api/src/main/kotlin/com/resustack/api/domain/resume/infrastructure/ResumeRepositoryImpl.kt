@@ -24,11 +24,6 @@ class ResumeRepositoryImpl(
             ?: throw ResourceNotFoundException("이력서를 찾을 수 없습니다. ID: $id")
     }
 
-    override fun findAllByUserId(userId: Long): List<Resume> {
-        return resumeMongoRepository.findAllByUserId(userId)
-            .map { it.toDomain() }
-    }
-
     override fun findAllByUserIdAndStatus(
         userId: Long,
         status: ResumeStatus,

@@ -11,8 +11,6 @@ interface ResumeRepository {
 
     fun findById(id: String): Resume
 
-    fun findAllByUserId(userId: Long): List<Resume>
-
     /**
      * 사용자 ID와 상태로 이력서 목록을 페이징 조회
      * @param userId 사용자 ID

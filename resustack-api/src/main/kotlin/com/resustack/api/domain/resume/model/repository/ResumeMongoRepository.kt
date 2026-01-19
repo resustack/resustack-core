@@ -7,8 +7,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.mongodb.repository.MongoRepository
 
 interface ResumeMongoRepository : MongoRepository<ResumeEntity, String> {
-    fun findAllByUserId(userId: Long): List<ResumeEntity>
-
     /**
      * 사용자 ID와 상태로 이력서 목록을 페이징 조회
      * @param userId 사용자 ID
