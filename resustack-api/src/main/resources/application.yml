@@ -35,3 +35,9 @@ jwt:
   secret: ${SECRET_KEY}
   access-token-validity-in-seconds: ${ACCESS_TOKEN_TIME}
   refresh-token-validity-in-seconds: ${REFRESH_TOKEN_TIME}
+
+app:
+  cookie:
+    domain: ${COOKIE_DOMAIN:}
+    secure: ${COOKIE_SECURE:false}      # 로컬 개발 환경은 false
+    same-site: ${COOKIE_SAME_SITE:Lax}
