@@ -9,6 +9,7 @@ import org.springframework.http.ResponseCookie
 object CookieUtils {
     private const val ACCESS_TOKEN_COOKIE_NAME = "accessToken"
     private const val REFRESH_TOKEN_COOKIE_NAME = "refreshToken"
+    private const val EMPTY_STRING = ""
 
     /**
      * Access Token용 HTTP-Only 쿠키 생성
@@ -68,6 +69,26 @@ object CookieUtils {
         properties.domain?.let { builder.domain(it) }
 
         return builder.build()
+    }
+
+    /**
+     * Access Token 쿠키 삭제
+     *
+     * @param properties 쿠키 설정 (domain, secure, sameSite)
+     * @return 삭제용 ResponseCookie 객체 (maxAge=0)
+     */
+    fun deleteAccessTokenCookie(properties: CookieProperties): ResponseCookie {
+        return createCookie(ACCESS_TOKEN_COOKIE_NAME, EMPTY_STRING, 0, properties)
+    }
+
+    /**
+     * Refresh Token 쿠키 삭제
+     *
+     * @param properties 쿠키 설정 (domain, secure, sameSite)
+     * @return 삭제용 ResponseCookie 객체 (maxAge=0)
+     */
+    fun deleteRefreshTokenCookie(properties: CookieProperties): ResponseCookie {
+        return createCookie(REFRESH_TOKEN_COOKIE_NAME, EMPTY_STRING, 0, properties)
     }
 
     /**
