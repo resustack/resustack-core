@@ -1,14 +1,13 @@
-package com.resustack.api.common.aop
+package com.resustack.common.aop
 
-import com.resustack.api.common.annotation.LogMask
-import com.resustack.api.common.util.logger
+import com.resustack.common.annotation.LogMask
 import com.resustack.common.security.principal.PrincipalDetails
+import com.resustack.common.util.logger
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
 import org.aspectj.lang.reflect.MethodSignature
 import org.springframework.stereotype.Component
-import org.springframework.web.bind.annotation.*
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import kotlin.getValue
