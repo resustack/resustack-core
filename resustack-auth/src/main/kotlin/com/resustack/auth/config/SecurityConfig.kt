@@ -1,6 +1,5 @@
 package com.resustack.auth.config
 
-import com.resustack.auth.global.security.filter.SecurityAuditLogger
 import com.resustack.common.security.config.SecurityExceptionConfig
 import com.resustack.common.security.filter.JwtAuthenticationFilter
 import org.springframework.context.annotation.Bean
@@ -23,7 +22,6 @@ class SecurityConfig(
     private val corsConfigurationSource: CorsConfigurationSource,
     private val oAuth2SecurityConfig: OAuth2SecurityConfig,
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
-    private val securityAuditLogger: SecurityAuditLogger
 ) {
 
     companion object {
@@ -66,7 +64,6 @@ class SecurityConfig(
             .exceptionHandling { securityExceptionConfig.configure(it) }
             .oauth2Login { oAuth2SecurityConfig.configure(it) }
             .addFilterBefore(jwtAuthenticationFilter, OAuth2LoginAuthenticationFilter::class.java)
-            .addFilterBefore(securityAuditLogger, JwtAuthenticationFilter::class.java)
 
         return http.build()
     }
