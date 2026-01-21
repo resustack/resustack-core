@@ -1,4 +1,4 @@
-package com.resustack.api.common.annotation
+package com.resustack.common.annotation
 
 /**
  * 로그 출력 시 민감한 정보를 마스킹하기 위한 어노테이션
