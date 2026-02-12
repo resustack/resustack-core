@@ -58,6 +58,7 @@ class SecurityConfig(
             }
             .authorizeHttpRequests {
                 it.requestMatchers(*PUBLIC_URLS).permitAll()
+                    .requestMatchers("/actuator/health").permitAll()
                     .requestMatchers("/actuator/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
             }
