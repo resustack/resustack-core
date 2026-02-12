@@ -5,6 +5,7 @@ COPY gradle.properties settings.gradle ./
 COPY build.gradle ./
 COPY resustack-common ./resustack-common
 COPY resustack-auth ./resustack-auth
+RUN mkdir -p resustack-api
 
 RUN gradle :resustack-auth:clean :resustack-auth:build -x test --no-daemon
 
