@@ -57,11 +57,17 @@ jobs:
 
       - name: 헬스 체크
         run: |
-          echo "서버 기동 대기 (15초)..."
-          sleep 15
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USERNAME }}@${{ secrets.DEV_API_SERVER_HOST }} \
-            'curl -f http://localhost:8080/actuator/health || exit 1'
-          echo "API 서버 헬스 체크 통과"
+          for i in 1 2 3 4 5 6; do
+            echo "헬스 체크 시도 $i/6 (10초 대기)..."
+            sleep 10
+            if ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USERNAME }}@${{ secrets.DEV_API_SERVER_HOST }} \
+              'curl -sf http://localhost:8080/actuator/health' > /dev/null 2>&1; then
+              echo "API 서버 헬스 체크 통과"
+              exit 0
+            fi
+          done
+          echo "헬스 체크 실패"
+          exit 1
 
       - name: 배포 완료
         run: |
