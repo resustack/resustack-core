@@ -34,6 +34,7 @@ class SecurityConfig(
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(*PUBLIC_ENDPOINTS).permitAll()
+                     .requestMatchers("/actuator/health").permitAll()
                     .anyRequest().authenticated()
             }
             .oauth2Login { }
