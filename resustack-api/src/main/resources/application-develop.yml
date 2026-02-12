@@ -1,0 +1,12 @@
+spring:
+  mongodb:
+    uri: ${SPRING_DATA_MONGODB_URI}
+
+springdoc:
+  swagger-ui:
+    enabled: false
+
+logging:
+  level:
+    com.resustack: INFO
+    org.springframework.data.mongodb: INFO

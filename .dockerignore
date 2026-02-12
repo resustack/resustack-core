@@ -1,0 +1,36 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.idea
+.vscode
+.claude
+*.iml
+
+# Build
+build/
+.gradle/
+.kotlin/
+out/
+
+# Test
+k6/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Infrastructure
+resustack-infra/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
