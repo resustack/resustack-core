@@ -7,11 +7,14 @@ import io.swagger.v3.oas.models.security.SecurityRequirement
 import io.swagger.v3.oas.models.security.SecurityScheme
 import io.swagger.v3.oas.models.servers.Server
 import org.springdoc.core.models.GroupedOpenApi
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class SwaggerConfig {
+class SwaggerConfig(
+    @Value($$"${app.dev-server-url:}") private val devServerUrl: String
+) {
 
     @Bean
     fun openAPI(): OpenAPI {
@@ -24,6 +27,11 @@ class SwaggerConfig {
             .url("http://localhost:8080")
             .description("Local development server")
 
+        val servers = mutableListOf(localServer)
+        if (devServerUrl.isNotBlank()) {
+            servers.add(Server().url(devServerUrl).description("Develop server"))
+        }
+
         val securityScheme = SecurityScheme()
             .type(SecurityScheme.Type.HTTP)
             .scheme("bearer")
@@ -35,7 +43,7 @@ class SwaggerConfig {
 
         return OpenAPI()
             .info(info)
-            .servers(listOf(localServer))
+            .servers(servers)
             .components(Components().addSecuritySchemes("bearerAuth", securityScheme))
             .addSecurityItem(securityRequirement)
     }
