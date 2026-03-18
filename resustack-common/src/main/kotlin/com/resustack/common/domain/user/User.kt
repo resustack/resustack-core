@@ -1,11 +1,14 @@
 package com.resustack.common.domain.user
 
 import jakarta.persistence.*
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
 
 @Entity
 @Table(name = "users")
-@EntityListeners(org.springframework.data.jpa.domain.support.AuditingEntityListener::class)
+@EntityListeners(AuditingEntityListener::class)
 class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,11 +33,11 @@ class User(
     @Column(nullable = false)
     val status: UserStatus = UserStatus.ACTIVE,
 
-    @org.springframework.data.annotation.CreatedDate
+    @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     var createdAt: LocalDateTime = LocalDateTime.now(),
 
-    @org.springframework.data.annotation.LastModifiedDate
+    @LastModifiedDate
     @Column(name = "updated_at")
     var updatedAt: LocalDateTime? = null
 ) {
