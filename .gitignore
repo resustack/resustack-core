@@ -42,5 +42,8 @@ out/
 ### MCP ###
 .mcp.json
 
+### Environment ###
+.env
+
 ### docs ###
 /docs/
