@@ -10,6 +10,9 @@ generated/
 .idea/
 .vscode/
 
+# Environment
+.env
+
 # ETC
 *.jar
 *.class
