@@ -1,5 +1,6 @@
 package com.resustack.auth.oauth.handler
 
+import com.resustack.auth.domain.auth.application.RefreshTokenService
 import com.resustack.auth.global.security.jwt.JwtTokenGenerator
 import com.resustack.common.security.cookie.CookieProperties
 import com.resustack.common.security.cookie.CookieUtils
@@ -18,7 +19,8 @@ import org.springframework.stereotype.Component
 class OAuth2AuthenticationSuccessHandler(
     private val jwtTokenGenerator: JwtTokenGenerator,
     private val cookieProperties: CookieProperties,
-    private val jwtProperties: JwtProperties
+    private val jwtProperties: JwtProperties,
+    private val refreshTokenService: RefreshTokenService
 ) : AuthenticationSuccessHandler {
 
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -46,6 +48,9 @@ class OAuth2AuthenticationSuccessHandler(
             email = user.email,
             authorities = authorities
         )
+
+        // Redis에 Refresh Token 저장
+        refreshTokenService.saveRefreshToken(user.id!!, tokenResponse.refreshToken)
 
         // HTTP-Only 쿠키로 토큰 전달 (보안 개선)
         val accessTokenCookie = CookieUtils.createAccessTokenCookie(
