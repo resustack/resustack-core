@@ -35,7 +35,6 @@ class RefreshTokenService(
     }
 
     fun rotateRefreshToken(userId: Long, newRefreshToken: String) {
-        deleteRefreshToken(userId)
         saveRefreshToken(userId, newRefreshToken)
     }
 }
