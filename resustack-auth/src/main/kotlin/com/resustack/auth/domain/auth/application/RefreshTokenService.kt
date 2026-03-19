@@ -1,5 +1,6 @@
 package com.resustack.auth.domain.auth.application
 
+import com.resustack.common.security.jwt.JwtProperties
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
 import java.util.concurrent.TimeUnit
@@ -10,17 +11,17 @@ import java.util.concurrent.TimeUnit
  */
 @Service
 class RefreshTokenService(
-    private val redisTemplate: StringRedisTemplate
+    private val redisTemplate: StringRedisTemplate,
+    private val jwtProperties: JwtProperties
 ) {
 
     companion object {
         private const val KEY_PREFIX = "refresh:"
-        private const val REFRESH_TOKEN_TTL_DAYS = 7L
     }
 
     fun saveRefreshToken(userId: Long, refreshToken: String) {
         val key = KEY_PREFIX + userId
-        redisTemplate.opsForValue().set(key, refreshToken, REFRESH_TOKEN_TTL_DAYS, TimeUnit.DAYS)
+        redisTemplate.opsForValue().set(key, refreshToken, jwtProperties.refreshTokenValidityInSeconds, TimeUnit.SECONDS)
     }
 
     fun getRefreshToken(userId: Long): String? {
