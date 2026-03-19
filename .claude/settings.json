@@ -20,7 +20,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '\\n=== 작업 완료 ===' && git diff --stat HEAD 2>/dev/null || echo '변경 없음'"
+            "command": "echo '\\n=== 작업 완료 ==='; DIFF=$(git diff --stat HEAD 2>/dev/null); if [ -n \"$DIFF\" ]; then echo \"$DIFF\"; else echo '변경 없음'; fi"
           }
         ]
       }
