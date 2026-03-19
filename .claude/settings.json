@@ -1,0 +1,34 @@
+{
+  "enabledPlugins": {
+    "code-review@claude-plugins-official": true
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./gradlew classes testClasses -q 2>&1 | tail -20"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '\\n=== 작업 완료 ===' && git diff --stat HEAD 2>/dev/null || echo '변경 없음'"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "github",
+    "postgres",
+    "mongodb"
+  ]
+}
