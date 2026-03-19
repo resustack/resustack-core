@@ -11,7 +11,6 @@ import com.resustack.api.domain.template.repository.TemplateRepository
 import com.resustack.common.model.PaginationRequest
 import com.resustack.common.model.PaginationResponse
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.security.access.AccessDeniedException
 
 @Service
@@ -23,7 +22,6 @@ class ResumeService(
     /**
      * 이력서 생성
      */
-    @Transactional
     fun create(userId: Long, request: ResumeCreateRequest): ResumeResponse {
         if (!templateRepository.existsById(request.templateId)) {
             throw ResourceNotFoundException("존재하지 않는 템플릿입니다. ID: ${request.templateId}")
@@ -37,7 +35,6 @@ class ResumeService(
     /**
      * 이력서 상세 조회 (ID)
      */
-    @Transactional(readOnly = true)
     fun getById(id: String, userId: Long? = null): ResumeResponse {
         val resume = resumeRepository.findById(id)
 
@@ -53,7 +50,6 @@ class ResumeService(
      * 내 이력서 목록 조회 (요약 정보, ACTIVE 상태만, 페이징 지원)
      * DB 레벨에서 필터링 및 페이징 처리하여 성능 최적화
      */
-    @Transactional(readOnly = true)
     fun getAllByUserId(userId: Long, paginationRequest: PaginationRequest): PaginationResponse<ResumeSummaryResponse> {
         val pageable = paginationRequest.toPageable()
         val resumePage = resumeRepository.findAllByUserIdAndStatus(userId, ResumeStatus.ACTIVE, pageable)
@@ -64,7 +60,6 @@ class ResumeService(
      * 이력서 수정
      * 본인이 작성한 이력서만 수정 가능
      */
-    @Transactional
     fun update(id: String, userId: Long, request: ResumeUpdateRequest): ResumeResponse {
         val resume = resumeRepository.findById(id)
 
@@ -91,7 +86,6 @@ class ResumeService(
      * 본인이 작성한 이력서만 삭제 가능
      * status를 INACTIVE로 변경하여 soft delete 수행
      */
-    @Transactional
     fun delete(id: String, userId: Long) {
         val resume = resumeRepository.findById(id)
 
