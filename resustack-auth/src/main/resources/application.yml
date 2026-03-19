@@ -5,6 +5,11 @@ spring:
   application:
     name: resustack-auth
 
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
   datasource:
     driver-class-name: org.postgresql.Driver
 
@@ -43,6 +48,8 @@ jwt:
   refresh-token-validity-in-seconds: ${REFRESH_TOKEN_TIME}
 
 app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
   oauth2:
     redirect-uri: ${OAUTH2_REDIRECT_URI}
   cookie:

@@ -29,7 +29,8 @@ class SecurityConfig(
             "/",
             "/favicon.ico",
             "/oauth2/**",
-            "/login/oauth2/**"
+            "/login/oauth2/**",
+            "/api/auth/refresh"
         )
     }
 

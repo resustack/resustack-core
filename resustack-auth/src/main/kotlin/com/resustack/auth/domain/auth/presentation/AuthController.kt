@@ -4,6 +4,7 @@ import com.resustack.auth.domain.auth.application.AuthService
 import com.resustack.auth.domain.auth.application.dto.UserInfoResponse
 import com.resustack.common.model.ResponseData
 import com.resustack.common.security.principal.PrincipalDetails
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -28,12 +29,22 @@ class AuthController(
         return ResponseEntity.ok(ResponseData.of(HttpStatus.OK, userInfo))
     }
 
+    @PostMapping("/refresh")
+    fun refresh(
+        request: HttpServletRequest,
+        response: HttpServletResponse
+    ): ResponseEntity<ResponseData<Unit>> {
+        authService.refresh(request, response)
+        return ResponseEntity.ok(ResponseData.of(HttpStatus.OK))
+    }
+
     @PostMapping("/logout")
     fun logout(
         @AuthenticationPrincipal principal: PrincipalDetails,
         response: HttpServletResponse
     ): ResponseEntity<ResponseData<Unit>> {
-        authService.logout(response)
+        val userId = requireNotNull(principal.getUser().id)
+        authService.logout(userId, response)
         return ResponseEntity.ok(ResponseData.of(HttpStatus.OK))
     }
 }

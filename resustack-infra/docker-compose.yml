@@ -30,6 +30,20 @@ services:
       interval: 10s
       start_period: 30s
 
+  redis:
+    image: redis:7
+    container_name: resustack-redis
+    restart: always
+    ports:
+      - "6381:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 1s
+      retries: 5
+
   postgres:
     container_name: resustack-postgresql
     environment:
@@ -52,6 +66,8 @@ volumes:
   mongodb_data:
     driver: local
   mongodb_config:
+    driver: local
+  redis_data:
     driver: local
   pg-data:
     driver: local

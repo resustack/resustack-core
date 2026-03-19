@@ -86,6 +86,17 @@ class JwtTokenProvider(
         return UsernamePasswordAuthenticationToken(principal, token, authorities)
     }
 
+    fun getEmailFromToken(token: String): String {
+        val claims = Jwts.parser()
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(token)
+            .payload
+
+        return claims.subject
+            ?: throw IllegalArgumentException("토큰에 이메일(subject)이 존재하지 않습니다.")
+    }
+
     fun getUserIdFromToken(token: String): Long? {
         return try {
             val claims = Jwts.parser()

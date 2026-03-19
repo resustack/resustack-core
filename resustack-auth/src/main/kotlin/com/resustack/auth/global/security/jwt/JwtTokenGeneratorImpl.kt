@@ -53,6 +53,7 @@ class JwtTokenGeneratorImpl(
 
         val refreshToken = Jwts.builder()
             .subject(email)
+            .claim(USER_ID_KEY, userId)
             .expiration(Date.from(refreshTokenExpiresIn))
             .signWith(key)
             .compact()
