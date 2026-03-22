@@ -5,6 +5,7 @@ import com.resustack.api.common.exception.ResourceNotFoundException
 import org.springframework.security.access.AccessDeniedException
 import com.resustack.api.domain.resume.application.dto.ResumeCreateRequest
 import com.resustack.api.domain.resume.application.dto.ResumeUpdateRequest
+import com.resustack.api.domain.resume.application.event.ResumeUpdatedEvent
 import com.resustack.api.domain.resume.model.Profile
 import com.resustack.api.domain.resume.model.Resume
 import com.resustack.api.domain.resume.model.ResumeStatus
@@ -13,6 +14,7 @@ import com.resustack.api.domain.resume.repository.ResumeRepository
 import com.resustack.api.domain.template.repository.TemplateRepository
 import java.time.LocalDateTime
 import com.resustack.common.model.PaginationRequest
+import org.springframework.context.ApplicationEventPublisher
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -43,6 +45,9 @@ class ResumeServiceTest {
 
     @Mock
     lateinit var resumeVersionService: ResumeVersionService
+
+    @Mock
+    lateinit var eventPublisher: ApplicationEventPublisher
 
     @InjectMocks
     lateinit var resumeService: ResumeService
@@ -315,7 +320,7 @@ class ResumeServiceTest {
     @Nested
     inner class UpdateResume {
         @Test
-        fun `성공 - 수정 전 현재 상태가 버전으로 저장됨`() {
+        fun `성공 - 수정 후 버전 저장 이벤트 발행`() {
             // given
             val resumeId = "resume-1"
             val userId = 1L
@@ -349,7 +354,7 @@ class ResumeServiceTest {
             assertEquals(request.title, response.title)
             assertEquals(request.profile.name, response.profile.name)
             assertEquals(request.isPublic, response.isPublic)
-            verify(resumeVersionService).saveVersion(existingResume)
+            verify(eventPublisher).publishEvent(ResumeUpdatedEvent(previousSnapshot = existingResume))
             verify(resumeRepository).findById(resumeId)
             verify(resumeRepository).save(any())
         }
@@ -424,7 +429,7 @@ class ResumeServiceTest {
             assertEquals("Old Title", response.title)
             assertEquals("Old User", response.profile.name)
             assertFalse(response.isPublic)
-            verify(resumeVersionService).saveVersion(currentResume)
+            verify(eventPublisher).publishEvent(ResumeUpdatedEvent(previousSnapshot = currentResume))
             verify(resumeVersionService).getVersionDomain(resumeId, 1)
             verify(resumeRepository).save(any())
         }
