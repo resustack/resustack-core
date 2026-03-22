@@ -1,0 +1,21 @@
+databaseChangeLog:
+  # --- Resume Versions Collection ---
+  - changeSet:
+      id: create-resume-versions-collection
+      author: resustack
+      changes:
+        - createCollection:
+            collectionName: resume_versions
+      rollback:
+        - dropCollection:
+            collectionName: resume_versions
+
+  - changeSet:
+      id: add-resume-versions-collection-comment
+      author: resustack
+      changes:
+        - runCommand:
+            command: "{collMod: 'resume_versions', comment: '이력서 수정 이력 스냅샷 (버전 관리용)'}"
+      rollback:
+        - runCommand:
+            command: "{collMod: 'resume_versions', comment: ''}"
