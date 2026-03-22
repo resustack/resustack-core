@@ -8,8 +8,10 @@ import com.resustack.api.domain.resume.application.dto.ResumeUpdateRequest
 import com.resustack.api.domain.resume.model.Profile
 import com.resustack.api.domain.resume.model.Resume
 import com.resustack.api.domain.resume.model.ResumeStatus
+import com.resustack.api.domain.resume.model.ResumeVersion
 import com.resustack.api.domain.resume.repository.ResumeRepository
 import com.resustack.api.domain.template.repository.TemplateRepository
+import java.time.LocalDateTime
 import com.resustack.common.model.PaginationRequest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -38,6 +40,9 @@ class ResumeServiceTest {
 
     @Mock
     lateinit var templateRepository: TemplateRepository
+
+    @Mock
+    lateinit var resumeVersionService: ResumeVersionService
 
     @InjectMocks
     lateinit var resumeService: ResumeService
@@ -310,7 +315,7 @@ class ResumeServiceTest {
     @Nested
     inner class UpdateResume {
         @Test
-        fun `성공`() {
+        fun `성공 - 수정 전 현재 상태가 버전으로 저장됨`() {
             // given
             val resumeId = "resume-1"
             val userId = 1L
@@ -344,6 +349,7 @@ class ResumeServiceTest {
             assertEquals(request.title, response.title)
             assertEquals(request.profile.name, response.profile.name)
             assertEquals(request.isPublic, response.isPublic)
+            verify(resumeVersionService).saveVersion(existingResume)
             verify(resumeRepository).findById(resumeId)
             verify(resumeRepository).save(any())
         }
@@ -376,6 +382,75 @@ class ResumeServiceTest {
                 resumeService.update(resumeId, requesterId, request)
             }
             verify(resumeRepository).findById(resumeId)
+        }
+    }
+
+    @Nested
+    inner class RestoreResume {
+        @Test
+        fun `성공 - 현재 상태 저장 후 대상 버전으로 복원`() {
+            // given
+            val resumeId = "resume-1"
+            val userId = 1L
+            val currentResume = Resume(
+                id = resumeId,
+                userId = userId,
+                title = "Current Title",
+                templateId = "template-1",
+                profile = Profile(name = "Current User"),
+                status = ResumeStatus.ACTIVE,
+                isPublic = true
+            )
+            val targetVersion = ResumeVersion(
+                id = "version-1",
+                resumeId = resumeId,
+                version = 1,
+                userId = userId,
+                title = "Old Title",
+                templateId = "template-1",
+                profile = Profile(name = "Old User"),
+                isPublic = false,
+                createdAt = LocalDateTime.now()
+            )
+
+            whenever(resumeRepository.findById(resumeId)).thenReturn(currentResume)
+            whenever(resumeVersionService.getVersionDomain(resumeId, 1)).thenReturn(targetVersion)
+            whenever(resumeRepository.save(any())).thenAnswer { it.arguments[0] as Resume }
+
+            // when
+            val response = resumeService.restore(resumeId, userId, 1)
+
+            // then
+            assertEquals("Old Title", response.title)
+            assertEquals("Old User", response.profile.name)
+            assertFalse(response.isPublic)
+            verify(resumeVersionService).saveVersion(currentResume)
+            verify(resumeVersionService).getVersionDomain(resumeId, 1)
+            verify(resumeRepository).save(any())
+        }
+
+        @Test
+        fun `복원 권한 없음 (다른 사용자)`() {
+            // given
+            val resumeId = "resume-1"
+            val ownerId = 1L
+            val requesterId = 2L
+            val currentResume = Resume(
+                id = resumeId,
+                userId = ownerId,
+                title = "My Resume",
+                templateId = "template-1",
+                profile = Profile(name = "Owner"),
+                status = ResumeStatus.ACTIVE,
+                isPublic = false
+            )
+
+            whenever(resumeRepository.findById(resumeId)).thenReturn(currentResume)
+
+            // when & then
+            assertThrows(AccessDeniedException::class.java) {
+                resumeService.restore(resumeId, requesterId, 1)
+            }
         }
     }
 
