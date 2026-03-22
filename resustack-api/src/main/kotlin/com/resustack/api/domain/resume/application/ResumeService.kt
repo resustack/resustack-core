@@ -6,17 +6,22 @@ import com.resustack.api.domain.resume.application.dto.ResumeResponse
 import com.resustack.api.domain.resume.application.dto.ResumeSummaryResponse
 import com.resustack.api.domain.resume.application.dto.ResumeUpdateRequest
 import com.resustack.api.domain.resume.model.ResumeStatus
+import com.resustack.api.domain.resume.application.event.ResumeUpdatedEvent
 import com.resustack.api.domain.resume.repository.ResumeRepository
 import com.resustack.api.domain.template.repository.TemplateRepository
 import com.resustack.common.model.PaginationRequest
 import com.resustack.common.model.PaginationResponse
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.security.access.AccessDeniedException
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class ResumeService(
     private val resumeRepository: ResumeRepository,
-    private val templateRepository: TemplateRepository
+    private val templateRepository: TemplateRepository,
+    private val resumeVersionService: ResumeVersionService,
+    private val eventPublisher: ApplicationEventPublisher
 ) {
 
     /**
@@ -59,7 +64,9 @@ class ResumeService(
     /**
      * 이력서 수정
      * 본인이 작성한 이력서만 수정 가능
+     * 트랜잭션 커밋 후 이벤트로 버전 저장 (관심사 분리)
      */
+    @Transactional
     fun update(id: String, userId: Long, request: ResumeUpdateRequest): ResumeResponse {
         val resume = resumeRepository.findById(id)
 
@@ -78,6 +85,40 @@ class ResumeService(
         )
 
         val savedResume = resumeRepository.save(updatedResume)
+
+        // 트랜잭션 커밋 후 버전 저장 이벤트 발행
+        eventPublisher.publishEvent(ResumeUpdatedEvent(previousSnapshot = resume))
+
+        return ResumeResponse.from(savedResume)
+    }
+
+    /**
+     * 이력서 버전 복원
+     * 복원 전 현재 상태를 이벤트로 버전 보관 (되돌리기의 되돌리기 가능)
+     */
+    @Transactional
+    fun restore(id: String, userId: Long, version: Int): ResumeResponse {
+        val resume = resumeRepository.findById(id)
+
+        if (resume.userId != userId) {
+            throw AccessDeniedException("이력서 복원 권한이 없습니다.")
+        }
+
+        // 대상 버전의 내용으로 이력서 덮어쓰기
+        val targetVersion = resumeVersionService.getVersionDomain(id, version)
+        val restoredResume = resume.copy(
+            title = targetVersion.title,
+            profile = targetVersion.profile,
+            sections = targetVersion.sections,
+            skills = targetVersion.skills,
+            isPublic = targetVersion.isPublic
+        )
+
+        val savedResume = resumeRepository.save(restoredResume)
+
+        // 트랜잭션 커밋 후 버전 저장 이벤트 발행
+        eventPublisher.publishEvent(ResumeUpdatedEvent(previousSnapshot = resume))
+
         return ResumeResponse.from(savedResume)
     }
 
